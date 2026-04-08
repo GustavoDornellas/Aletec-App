@@ -1,20 +1,23 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Aletec Project
 
-# Run and deploy your AI Studio app
+Sistema interno da Aletec para controle de inventario, dashboard de estoque, serial numbers e acompanhamento de placas.
 
-This contains everything you need to run your app locally.
+## Rodar localmente
 
-View your app in AI Studio: https://ai.studio/apps/843cd52f-9f15-4e2c-b6fd-010e77dccb03
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
+1. Instale as dependencias:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Configure o arquivo `.env.local` com as credenciais do Supabase
+3. Rode o projeto:
    `npm run dev`
+
+## Tecnologias
+
+- Next.js
+- React
+- Tailwind CSS
+- Supabase
+
+## Observacoes
+
+- O arquivo `.env.local` nao deve ser enviado para o GitHub
+- As migrations do banco estao em `supabase/migrations`
