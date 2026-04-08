@@ -1,0 +1,84 @@
+'use client';
+
+import React from 'react';
+import Image from 'next/image';
+import { LogOut, LogIn, Menu } from 'lucide-react';
+import { useFirebase } from './FirebaseProvider';
+
+interface TopBarProps {
+  title: string;
+  onMenuClick: () => void;
+  showSectionLinks?: boolean;
+}
+
+export default function TopBar({
+  title,
+  onMenuClick,
+  showSectionLinks = true,
+}: TopBarProps) {
+  const { user, login, logout } = useFirebase();
+
+  return (
+    <header className="flex justify-between items-center w-full px-4 md:px-6 py-3 bg-white border-b border-slate-200 z-40 sticky top-0">
+      <div className="flex items-center gap-3 md:gap-4 flex-1">
+        <button
+          onClick={onMenuClick}
+          className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 md:hidden transition-colors"
+        >
+          <Menu size={20} />
+        </button>
+        <h2 className="font-headline font-bold text-base md:text-lg tracking-tight text-slate-900 truncate">{title}</h2>
+      </div>
+
+      <div className="flex items-center gap-6">
+        {showSectionLinks && (
+          <>
+            <nav className="hidden lg:flex items-center gap-8">
+              <a className="text-primary font-bold border-b-2 border-primary text-sm py-1" href="#">Visão Geral</a>
+            </nav>
+
+            <div className="h-6 w-px bg-slate-200 mx-2 hidden lg:block"></div>
+          </>
+        )}
+
+        <div className="flex items-center gap-3">
+          {user ? (
+            <div className="flex items-center gap-3 ml-2">
+              <div className="flex flex-col items-end hidden sm:flex">
+                <span className="text-xs font-bold text-slate-900">{user.displayName}</span>
+                <span className="text-[10px] text-slate-500">{user.email}</span>
+              </div>
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 relative">
+                <Image
+                  src={user.photoURL || "https://lh3.googleusercontent.com/aida-public/AB6AXuAXDvb0W9ZW1gdUDQzqoH0VgHRLZbRenP8sqLxtlFrJdbEfuklUa_gKUySh1X5OqWoC4enZCtNwMapM5VI9Qo3tx5ULQxWvazNwi_7DDxz04AVkGUTyJtIZNczOHWmAGEW8HJiqDZenw8aVTBHLgilukczqmZ43SEru7DPGAplKE-Yr5xOC8N9AdfUc4ACM2hX0E5I-5k7GtUJBzjgb-j-AP--EJhGqPwkoM-s2rpbg2bU0vU_vbQ0itd8C9kl5JGTf67H462ne8w"}
+                  alt="User Profile"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <button
+                onClick={logout}
+                className="p-2 rounded-full hover:bg-red-50 text-red-500 transition-colors"
+                title="Sair"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                void login();
+              }}
+              className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-all"
+            >
+              <LogIn size={14} />
+              Entrar
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}

@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: products
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - pn: string (required, 1-50 chars)
+    //   - category: string (required, enum)
+    //   - price: number (required, positive)
+    //   - image: string (optional, URL)
+    //   - total: number (required, >= 0)
+    //   - available: number (required, >= 0)
+    //   - createdAt: timestamp (required)
+    //   - updatedAt: timestamp (required)
+    //
+    // Collection: products/{productId}/units
+    // Fields:
+    //   - productId: string (required)
+    //   - sn: string (required, 1-50 chars)
+    //   - status: string (required, enum: ['Disponível', 'Utilizada', 'Vendida', 'Manutenção'])
+    //   - updatedAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      // In prototype phase with hardcoded login, we bypass Firebase Auth checks
+      // because the app uses a custom local authentication system.
+      return true;
+    }
+
+    function isAdmin() {
+      // In prototype phase, we allow administrative actions.
+      // This should be hardened with request.auth checks once real DB auth is implemented.
+      return true;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && 
+             data.pn is string &&
+             (!('category' in data) || data.category is string) &&
+             (!('status' in data) || data.status is string) &&
+             (!('price' in data) || data.price is number) &&
+             (!('total' in data) || data.total is number) &&
+             (!('available' in data) || data.available is number) &&
+             (!('sold' in data) || data.sold is number) &&
+             (!('image' in data) || data.image == null || data.image is string);
+    }
+
+    function isValidUnit(data) {
+      return data.sn is string &&
+             (!('status' in data) || data.status is string) &&
+             (!('productId' in data) || data.productId is string) &&
+             (!('quantity' in data) || data.quantity is number) &&
+             (!('image' in data) || data.image == null || data.image is string);
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if true; // Public read access
+      allow create: if isAdmin() && isValidProduct(request.resource.data);
+      allow update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
+
+      match /units/{unitId} {
+        allow read: if true; // Public read access
+        allow create: if isAdmin() && isValidUnit(request.resource.data);
+        allow update: if isAdmin() && isValidUnit(request.resource.data);
+        allow delete: if isAdmin();
+      }
+    }
+  }
+}

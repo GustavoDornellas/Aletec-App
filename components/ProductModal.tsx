@@ -1,0 +1,269 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { X, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { createProduct, updateProduct, type Product } from '@/lib/inventory-store';
+
+interface ProductModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  product?: Product;
+  onError?: (message: string) => void;
+  onSuccess?: (message: string) => void;
+  onSaved?: (product: Product, mode: 'create' | 'update') => void;
+}
+
+export default function ProductModal({ isOpen, onClose, product, onError, onSuccess, onSaved }: ProductModalProps) {
+  const [loading, setLoading] = useState(false);
+  const [imageName, setImageName] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    pn: '',
+    category: 'Placa Principal',
+    price: '',
+    status: 'Ativo',
+    image: '',
+  });
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || '',
+        pn: product.pn || '',
+        category: product.category || 'Placa Principal',
+        price: product.price?.toString() || '',
+        status: product.status || 'Ativo',
+        image: product.image || '',
+      });
+      setImageName(product.image ? 'Imagem atual' : '');
+    } else {
+      setFormData({
+        name: '',
+        pn: '',
+        category: 'Placa Principal',
+        price: '',
+        status: 'Ativo',
+        image: '',
+      });
+      setImageName('');
+    }
+  }, [product, isOpen]);
+
+  const resizeImage = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        if (typeof reader.result !== 'string') {
+          reject(new Error('Nao foi possivel ler a imagem.'));
+          return;
+        }
+
+        const img = new window.Image();
+
+        img.onload = () => {
+          const maxSide = 640;
+          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+
+          const context = canvas.getContext('2d');
+          if (!context) {
+            reject(new Error('Nao foi possivel processar a imagem.'));
+            return;
+          }
+
+          context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressedImage = canvas.toDataURL('image/jpeg', 0.62);
+
+          if (compressedImage.length > 220000) {
+            reject(new Error('A imagem ficou muito grande. Escolha outra foto menor.'));
+            return;
+          }
+
+          resolve(compressedImage);
+        };
+
+        img.onerror = () => reject(new Error('Nao foi possivel abrir a imagem selecionada.'));
+        img.src = reader.result;
+      };
+
+      reader.onerror = () => reject(new Error('Nao foi possivel carregar a imagem selecionada.'));
+      reader.readAsDataURL(file);
+    });
+
+  const handleImageFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      onError?.('Selecione um arquivo de imagem valido.');
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      const resizedImage = await resizeImage(file);
+      setFormData((current) => ({ ...current, image: resizedImage }));
+      setImageName(file.name);
+    } catch (error) {
+      onError?.(error instanceof Error ? error.message : 'Nao foi possivel carregar a imagem selecionada.');
+      setFormData((current) => ({ ...current, image: '' }));
+      setImageName('');
+      event.target.value = '';
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const payload = {
+        ...formData,
+        status: 'Ativo',
+        price: parseFloat(formData.price),
+        image: formData.image || null,
+      };
+
+      if (product?.id) {
+        const updatedProduct = await updateProduct(product.id, payload);
+        onSaved?.(updatedProduct, 'update');
+        onSuccess?.('Item atualizado com sucesso.');
+      } else {
+        const createdProduct = await createProduct(payload);
+        onSaved?.(createdProduct, 'create');
+        onSuccess?.('Item cadastrado com sucesso.');
+      }
+
+      onClose();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Nao foi possivel salvar o item.';
+      onError?.(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="font-headline font-bold text-lg text-slate-900">
+                {product ? 'Editar Item' : 'Cadastrar Novo Item'}
+              </h3>
+              <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Produto</label>
+                <input
+                  required
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-slate-50 border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                  placeholder="Ex: Placa de Controle Central V3"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Modelo</label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.pn}
+                    onChange={(e) => setFormData({ ...formData, pn: e.target.value })}
+                    className="w-full bg-slate-50 border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                    placeholder="Ex: CTR-9902-LX"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Valor (R$)</label>
+                  <input
+                    required
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    className="w-full bg-slate-50 border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Categoria</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full bg-slate-50 border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                >
+                  <option>Placa Principal</option>
+                  <option>Placa Fonte</option>
+                  <option>Outros</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Foto do Modelo (Opcional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                  className="w-full bg-slate-50 border-slate-200 rounded-lg px-4 py-2 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary"
+                />
+                {imageName && (
+                  <p className="mt-2 text-xs font-medium text-slate-500">Imagem selecionada: {imageName}</p>
+                )}
+                {formData.image && (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
+                    <img
+                      src={formData.image}
+                      alt="Pre-visualizacao do modelo"
+                      className="h-36 w-full rounded-lg object-contain bg-white"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
+                  {loading && <Loader2 size={16} className="animate-spin" />}
+                  {product ? 'Salvar Alteracoes' : 'Cadastrar Item'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
