@@ -12,20 +12,39 @@ O **Aletec Project** é uma aplicação desenvolvida com o objetivo de aplicar c
 
 ## 🚀 Funcionalidades | Features
 
+### 🇧🇷 Funcionalidades
+
 * ⚙️ Implementação de funcionalidades práticas
 * 🧩 Organização modular do código
 * 📈 Estrutura preparada para evolução
 * 💡 Aplicação de conceitos de desenvolvimento
 
+### 🇺🇸 Features
+
+* ⚙️ Implementation of practical features
+* 🧩 Modular code organization
+* 📈 Structure designed for scalability
+* 💡 Application of development concepts
+
 ---
 
 ## 🛠️ Tecnologias | Technologies
 
-* (adicione aqui | add here: HTML, CSS, JavaScript, Java, etc.)
+### 🇧🇷 Tecnologias
+
+* (adicione aqui: HTML, CSS, JavaScript, Java, etc.)
+
+### 🇺🇸 Technologies
+
+* (add here: HTML, CSS, JavaScript, Java, etc.)
 
 ---
 
 ## 📷 Demonstração | Demo
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/febc3c64-80f6-4a88-9d5d-123c57ffa913" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/87487d48-43ea-49a3-9a2c-4fef54dd2383" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/031886c2-a16e-444e-8b4c-53d7ec04b3a0" />
 
 
 
@@ -34,31 +53,43 @@ O **Aletec Project** é uma aplicação desenvolvida com o objetivo de aplicar c
 ## ⚙️ Como executar | How to Run
 
 ```bash
-# Clone o repositório | Clone the repository
+# 🇧🇷 Clonar o repositório
+# 🇺🇸 Clone the repository
 git clone https://github.com/GustavoDornellas/Aletec-Project.git
 
-# Entre na pasta | Enter the folder
+# 🇧🇷 Entrar na pasta
+# 🇺🇸 Enter the folder
 cd Aletec-Project
 
-# Execute o projeto | Run the project
-# (adicione o comando correto | add command: npm install / npm start / etc.)
+# 🇧🇷 Executar o projeto
+# 🇺🇸 Run the project
+# (adicione o comando | add command: npm install / npm start / etc.)
 ```
 
 ---
 
 ## 📚 Contexto | Context
 
+### 🇧🇷
+
 Projeto desenvolvido com foco no aprendizado e aplicação prática de conceitos de desenvolvimento de software.
+
+### 🇺🇸
+
 Project developed with a focus on learning and practical application of software development concepts.
 
 ---
 
 ## 🔒 Licença | License
 
-© 2026 Gustavo Dornellas. Todos os direitos reservados.
-© 2026 Gustavo Dornellas. All rights reserved.
+### 🇧🇷
 
+© 2026 Gustavo Dornellas. Todos os direitos reservados.
 Este projeto não pode ser copiado, modificado ou utilizado sem autorização prévia.
+
+### 🇺🇸
+
+© 2026 Gustavo Dornellas. All rights reserved.
 This project may not be copied, modified, or used without prior authorization.
 
 ---
