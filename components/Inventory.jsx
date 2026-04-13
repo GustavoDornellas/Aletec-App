@@ -504,6 +504,66 @@ export default function Inventory() {
           {filteredProducts.map((product) => {
             const filteredUnits = filteredUnitsByProduct[product.id] || [];
             return (<div key={product.id} className="contents">
+                <div className="md:hidden px-4 py-4">
+                  <div onClick={() => setExpandedId(expandedId === product.id ? null : product.id)} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 shadow-sm transition-colors dark:border-[#45413c] dark:bg-[#2b2927]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <div className={`w-12 h-12 bg-slate-100 rounded-xl flex-shrink-0 flex items-center justify-center p-2 relative overflow-hidden dark:bg-[#2f2c29] ${product.image ? 'cursor-zoom-in' : ''}`} onClick={(e) => {
+                            if (!product.image)
+                                return;
+                            e.stopPropagation();
+                            setPreviewImage({ src: product.image, alt: product.name });
+                        }}>
+                          {product.image ? (<Image src={product.image} alt={product.name} fill className="object-contain p-1 mix-blend-multiply opacity-80" unoptimized referrerPolicy="no-referrer"/>) : (<Package size={24} className="text-slate-400 dark:text-blue-300/70"/>)}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-bold text-on-surface font-headline leading-tight dark:text-blue-200">{product.name}</h4>
+                          <p className="text-[11px] text-on-surface-variant font-medium truncate dark:text-blue-300/75">PN: {product.pn}</p>
+                          <div className="mt-2">
+                            <span className="text-[10px] px-2 py-1 bg-slate-100 text-on-surface-variant rounded font-black uppercase tracking-wider dark:bg-[#2f2c29] dark:text-blue-200">
+                              {product.category}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <ChevronDown size={20} className={`mt-1 shrink-0 text-slate-400 transition-transform duration-200 ${expandedId === product.id ? 'rotate-180' : ''}`}/>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div className="rounded-xl bg-white px-3 py-3 border border-slate-200 dark:bg-[#34322f] dark:border-[#45413c]">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant dark:text-blue-300/80">Quantidade</p>
+                        <p className="mt-1 text-sm font-bold text-on-surface dark:text-blue-200">{product.total || 0} Total</p>
+                        <p className={`text-[10px] font-bold uppercase tracking-tighter ${(product.available || 0) === 0 ? 'text-error' : 'text-tertiary'}`}>
+                          {product.available || 0} Disponiveis
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-white px-3 py-3 border border-slate-200 dark:bg-[#34322f] dark:border-[#45413c]">
+                        <p className="text-[10px] font-black uppercase tracking-wider text-on-surface-variant dark:text-blue-300/80">Preco</p>
+                        <p className="mt-1 text-sm font-bold text-on-surface dark:text-blue-200">
+                          R$ {product.price?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {isAdmin && (<div className="mt-4 flex items-center justify-end gap-2">
+                        <button onClick={(e) => {
+                            e.stopPropagation();
+                            startTransition(() => {
+                                setSelectedProduct(product);
+                                setIsProductModalOpen(true);
+                            });
+                        }} className="p-2 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors dark:text-zinc-400 dark:hover:bg-[#2f2c29]">
+                          <Edit size={16}/>
+                        </button>
+                        <button onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirmId(product.id);
+                        }} className="p-2 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors dark:text-zinc-400 dark:hover:bg-[#2f2c29]">
+                          <Trash2 size={16}/>
+                        </button>
+                      </div>)}
+                  </div>
+                </div>
                 <div onClick={() => setExpandedId(expandedId === product.id ? null : product.id)} className="hidden md:grid grid-cols-12 gap-4 px-6 py-5 items-center hover:bg-slate-50/50 transition-colors cursor-pointer group dark:hover:bg-zinc-800/40">
                   <div className="col-span-1 flex justify-center">
                     <ChevronDown size={20} className={`text-slate-400 transition-transform duration-200 ${expandedId === product.id ? 'rotate-180' : ''}`}/>
