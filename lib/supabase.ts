@@ -48,14 +48,19 @@ export function handleSupabaseError(error: unknown, operationType: OperationType
         : typeof error === 'object' && error !== null && 'error' in error && typeof error.error === 'string'
           ? error.error
           : String(error);
+  const normalizedMessage = message.toLowerCase();
+  const friendlyMessage =
+    normalizedMessage.includes('products_pn_key') || normalizedMessage.includes('duplicate key value')
+      ? 'Ja existe um item cadastrado com esse PN. Use outro PN ou edite o item existente.'
+      : message;
   const errInfo = {
-    error: message,
+    error: friendlyMessage,
     operationType,
     path,
   };
 
-  console.error('Supabase Error:', JSON.stringify(errInfo));
-  throw new Error(message);
+  console.warn('Supabase Warning:', JSON.stringify(errInfo));
+  throw new Error(friendlyMessage);
 }
 
 export async function removeChannel(channel: RealtimeChannel) {

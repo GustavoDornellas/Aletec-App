@@ -66,7 +66,7 @@ export default function Dashboard() {
     {
       label: 'Valor em Estoque',
       value: `R$ ${inventoryValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      sub: 'Baseado nas unidades disponíveis',
+      sub: 'Baseado nas unidades disponiveis',
       icon: Boxes,
     },
   ];
@@ -94,62 +94,92 @@ export default function Dashboard() {
       animate={{ opacity: 1, y: 0 }}
       className="p-4 md:p-8 space-y-6 md:space-y-8"
     >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 [&_h2]:dark:text-blue-100 [&_p]:dark:text-blue-200/90">
+        <div>
+          <h2 className="text-3xl font-extrabold font-headline text-slate-900 tracking-tight">Dashboard</h2>
+          <p className="text-on-surface-variant font-medium text-sm mt-1 uppercase tracking-wider">
+            Visao geral do estoque e da operacao
+          </p>
+        </div>
+        <div className="w-full md:w-auto rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-[#45413c] dark:bg-[#2b2927]">
+          <p className="text-[11px] font-black uppercase tracking-[0.24em] text-on-surface-variant dark:text-blue-200/85">Resumo rapido</p>
+          <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-blue-50">
+            {products.length} modelos cadastrados e {availableUnits.toLocaleString('pt-BR')} unidades disponiveis
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, i) => (
-          <div key={i} className="bg-white rounded-xl p-5 md:p-6 shadow-sm border-l-4 border-primary/20 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{stat.label}</span>
-              <stat.icon className="text-primary/60" size={18} />
+          <div
+            key={i}
+            className="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow dark:bg-[#2b2927] dark:border-[#45413c]"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] dark:text-blue-200/85">{stat.label}</span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <stat.icon size={18} />
+              </div>
             </div>
             <div className="flex flex-col">
-              <span className="font-headline font-extrabold text-2xl md:text-3xl text-on-surface tracking-tight">{stat.value}</span>
-              <span className="text-[10px] md:text-[11px] font-bold text-tertiary mt-1">{stat.sub}</span>
+              <span className="font-headline font-extrabold text-2xl md:text-3xl text-on-surface tracking-tight dark:text-blue-50">{stat.value}</span>
+              <span className="text-[11px] md:text-xs font-bold text-tertiary mt-2 dark:text-emerald-300">{stat.sub}</span>
             </div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-headline font-bold text-on-surface mb-6 flex items-center gap-2">
+        <div className="lg:col-span-7 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 dark:bg-[#2b2927] dark:border-[#45413c]">
+          <h3 className="font-headline font-bold text-on-surface mb-6 flex items-center gap-2 dark:text-blue-50">
             <BarChart3 className="text-primary" size={20} />
-            Distribuição por Categoria
+            Distribuicao por Categoria
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-4">
               {categoryStats.map((cat, i) => {
                 const percentage = products.length > 0 ? Math.round((cat.value / products.length) * 100) : 0;
                 return (
-                  <div key={i}>
-                    <div className="flex justify-between text-xs mb-1 font-medium">
-                      <span>{cat.label}</span>
-                      <span className="text-on-surface-variant">{percentage}%</span>
+                  <div key={i} className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-4 dark:border-[#45413c] dark:bg-[#242220]">
+                    <div className="flex justify-between text-xs mb-2 font-bold">
+                      <span className="text-slate-900 dark:text-blue-50">{cat.label}</span>
+                      <span className="text-on-surface-variant dark:text-blue-200/85">{percentage}%</span>
                     </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div
-                        style={{ width: `${percentage}%` }}
-                        className={`${cat.color} h-2 rounded-full`}
-                      />
+                    <div className="w-full bg-slate-100 rounded-full h-2.5 dark:bg-[#34322f]">
+                      <div style={{ width: `${percentage}%` }} className={`${cat.color} h-2.5 rounded-full`} />
                     </div>
+                    <p className="mt-2 text-[11px] font-medium text-on-surface-variant dark:text-blue-200/80">{cat.value} modelo(s)</p>
                   </div>
                 );
               })}
             </div>
 
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.1em] mb-2">Sistema Industrial</p>
-                <p className="text-xs text-slate-500 font-medium">
-                  Monitoramento ativo de {products.length} modelos e {availableUnits.toLocaleString('pt-BR')} unidades disponíveis
-                </p>
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 dark:bg-[#242220] dark:border-[#45413c]">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2 dark:text-blue-200/85">Status operacional</p>
+                  <p className="text-lg font-extrabold text-slate-900 dark:text-blue-50">
+                    {availableUnits > 0 ? 'Estoque ativo' : 'Sem disponibilidade'}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-white px-4 py-3 border border-slate-200 dark:bg-[#2b2927] dark:border-[#4b4741]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-on-surface-variant dark:text-blue-200/85">Disponiveis</p>
+                    <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-blue-50">{availableUnits}</p>
+                  </div>
+                  <div className="rounded-xl bg-white px-4 py-3 border border-slate-200 dark:bg-[#2b2927] dark:border-[#4b4741]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-on-surface-variant dark:text-blue-200/85">Vendidas</p>
+                    <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-blue-50">{soldUnits}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-5 bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-headline font-bold text-on-surface mb-6 flex items-center gap-2">
+        <div className="lg:col-span-5 bg-white rounded-2xl p-6 shadow-sm border border-slate-100 dark:bg-[#2b2927] dark:border-[#45413c]">
+          <h3 className="font-headline font-bold text-on-surface mb-6 flex items-center gap-2 dark:text-blue-50">
             <Package className="text-primary" size={20} />
             Resumo dos Produtos
           </h3>
@@ -157,27 +187,31 @@ export default function Dashboard() {
           <div className="space-y-3">
             {recentProducts.length > 0 ? (
               recentProducts.map((product) => (
-                <div key={product.id} className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+                <div
+                  key={product.id}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3 dark:border-[#45413c] dark:bg-[#242220]"
+                >
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900 truncate">{product.name}</p>
-                    <p className="text-[11px] text-slate-500 truncate">
+                    <p className="text-sm font-bold text-slate-900 truncate dark:text-blue-50">{product.name}</p>
+                    <p className="text-[11px] text-slate-500 truncate dark:text-blue-200/80">
                       PN: {product.pn} • {product.category}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-slate-900">{product.available || 0} disp.</p>
-                    <p className="text-[11px] text-slate-500">{product.sold || 0} vend.</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-blue-50">{product.available || 0} disp.</p>
+                    <p className="text-[11px] text-slate-500 dark:text-blue-200/80">{product.sold || 0} vend.</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+              <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500 dark:border-[#4b4741] dark:text-blue-300/70">
                 Nenhum produto cadastrado ainda.
               </div>
             )}
           </div>
         </div>
       </div>
+
     </motion.div>
   );
 }

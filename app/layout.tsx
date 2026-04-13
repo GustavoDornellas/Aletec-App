@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import { Inter, Manrope } from 'next/font/google';
 import './globals.css';
 import { FirebaseProvider } from '@/components/FirebaseProvider';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,10 +22,12 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="pt-BR" suppressHydrationWarning className={`${inter.variable} ${manrope.variable}`}>
-      <body suppressHydrationWarning className="bg-[#f4faff] text-[#0a3747] antialiased">
-        <FirebaseProvider>
-          {children}
-        </FirebaseProvider>
+      <body suppressHydrationWarning className="bg-[#f4faff] text-[#0a3747] antialiased transition-colors duration-300">
+        <ThemeProvider>
+          <FirebaseProvider>
+            {children}
+          </FirebaseProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

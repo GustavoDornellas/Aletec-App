@@ -141,14 +141,14 @@ export default function UnitModal({ isOpen, onClose, productId, onError, onSucce
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Numero de Serie (SN)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Numero de Serie</label>
                 <input
                   required
                   type="text"
                   value={sn}
                   onChange={(e) => setSn(e.target.value)}
                   className="w-full bg-slate-50 border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-                  placeholder="Ex: #SN-9902-LX-001"
+                  placeholder="Ex: BN94-17213D"
                 />
               </div>
 
@@ -178,7 +178,7 @@ export default function UnitModal({ isOpen, onClose, productId, onError, onSucce
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Foto pela Galeria (Opcional)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Foto da placa (OPCIONAL)</label>
                 <input
                   type="file"
                   accept="image/*"

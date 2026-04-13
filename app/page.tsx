@@ -28,7 +28,7 @@ export default function Page() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden relative">
+    <div className="flex min-h-screen md:h-screen overflow-hidden relative bg-surface dark:bg-zinc-900">
       <Sidebar 
         activeView={activeView} 
         onViewChange={(view) => { setActiveView(view); setIsSidebarOpen(false); }} 
@@ -36,14 +36,14 @@ export default function Page() {
         onClose={() => setIsSidebarOpen(false)}
       />
       
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <TopBar 
           title={activeView === 'dashboard' ? 'Dashboard' : 'Gerenciamento de Estoque'} 
           onMenuClick={() => setIsSidebarOpen(true)}
           showSectionLinks={activeView !== 'dashboard'}
         />
         
-        <div className="flex-1 overflow-y-auto bg-surface">
+        <div className="flex-1 overflow-y-auto bg-surface dark:bg-zinc-900">
           {activeView === 'dashboard' ? (
             <Dashboard />
           ) : (

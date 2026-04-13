@@ -24,7 +24,7 @@ export default function Sidebar({ activeView, onViewChange, isOpen, onClose }: S
 
       <aside
         className={cn(
-          'fixed md:relative flex flex-col h-full w-64 bg-[#2d2d2d] border-r border-[#3a3a3a] shadow-xl flex-shrink-0 z-[80] transition-transform duration-300',
+          'fixed md:relative flex flex-col h-full w-[82vw] max-w-64 bg-[#2d2d2d] border-r border-[#3a3a3a] shadow-xl flex-shrink-0 z-[80] transition-transform duration-300 dark:bg-zinc-900 dark:border-zinc-700',
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
       >
