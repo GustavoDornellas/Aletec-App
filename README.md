@@ -51,11 +51,21 @@ O **Aletec Project** é uma aplicação desenvolvida com o objetivo de aplicar c
 
 ### 🇧🇷
 
-Projeto desenvolvido com foco no aprendizado e aplicação prática de conceitos de desenvolvimento de software.
+Este projeto surgiu a partir de uma necessidade real do dia a dia.
+Meu pai realizava o controle dos produtos que vendia utilizando um caderno, o que dificultava a organização, visualização e atualização das informações. A partir disso, decidi desenvolver uma solução digital simples, com o objetivo de facilitar esse processo.
+
+A proposta do sistema não é automatizar reposição de estoque ou gerar previsões, mas sim oferecer um controle claro e direto dos produtos disponíveis para venda, funcionando como uma “planilha inteligente”, porém mais organizada e acessível.
+
+Além de resolver um problema real, o projeto também foi uma oportunidade de aplicar na prática conceitos de desenvolvimento web, integração com banco de dados e construção de aplicações completas.
 
 ### 🇺🇸
 
-Project developed with a focus on learning and practical application of software development concepts.
+This project was created to solve a real-world problem.
+My father used to manage his products manually in a notebook, which made it difficult to organize, update, and visualize the information. Based on that, I decided to build a simple digital solution to improve this process.
+
+The goal of the system is not to automate stock replenishment or generate predictions, but to provide a clear and straightforward way to control available products, working like a “smart spreadsheet”, but more organized and accessible.
+
+Beyond solving a real problem, this project was also an opportunity to apply software development concepts in practice, including web development, database integration, and building complete applications.
 
 ---
 
