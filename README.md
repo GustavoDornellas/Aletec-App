@@ -30,14 +30,8 @@ O **Aletec Project** é uma aplicação desenvolvida com o objetivo de aplicar c
 
 ## 🛠️ Tecnologias | Technologies
 
-### 🇧🇷 Tecnologias
-
-* (adicione aqui: HTML, CSS, JavaScript, Java, etc.)
-
-### 🇺🇸 Technologies
-
-* (add here: HTML, CSS, JavaScript, Java, etc.)
-
+* HTML, CSS, JavaScript, Supabase.
+  
 ---
 
 ## 📷 Demonstração | Demo
@@ -52,23 +46,6 @@ O **Aletec Project** é uma aplicação desenvolvida com o objetivo de aplicar c
 
 ---
 
-## ⚙️ Como executar | How to Run
-
-```bash
-# 🇧🇷 Clonar o repositório
-# 🇺🇸 Clone the repository
-git clone https://github.com/GustavoDornellas/Aletec-Project.git
-
-# 🇧🇷 Entrar na pasta
-# 🇺🇸 Enter the folder
-cd Aletec-Project
-
-# 🇧🇷 Executar o projeto
-# 🇺🇸 Run the project
-# (adicione o comando | add command: npm install / npm start / etc.)
-```
-
----
 
 ## 📚 Contexto | Context
 
