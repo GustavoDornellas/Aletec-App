@@ -339,7 +339,8 @@ export default function Inventory() {
                 const missingLabels = missingHeaders.map((header) => CSV_FIELDS.find((field) => field.key === header)?.label || header);
                 throw new Error(`CSV invalido. Faltam colunas: ${missingLabels.join(', ')}.`);
             }
-            const productsByPn = new Map(products.map((product) => [product.pn.trim().toLowerCase(), product]));
+            const buildProductKey = (pn, category) => `${pn.trim().toLowerCase()}::${category.trim().toLowerCase()}`;
+            const productsByPn = new Map(products.map((product) => [buildProductKey(product.pn, product.category), product]));
             const existingUnits = new Set(Object.entries(units).flatMap(([productId, productUnits]) => productUnits.map((unit) => `${productId}:${unit.sn.trim().toLowerCase()}`)));
             const fileUnits = new Set();
             let importedProducts = 0;
@@ -357,7 +358,7 @@ export default function Inventory() {
                 if (!name || !pn) {
                     throw new Error(`Linha ${rowNumber}: informe ao menos nome e PN.`);
                 }
-                const pnKey = pn.toLowerCase();
+                const pnKey = buildProductKey(pn, category);
                 let product = productsByPn.get(pnKey);
                 if (!product) {
                     product = await createProduct({
