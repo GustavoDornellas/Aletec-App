@@ -1,40 +1,47 @@
-# 💻 Aletec Project
+# 📦 Aletec App
 
-## 🇧🇷 Sobre o Projeto
+## 🧠 Sobre o Projeto
 
-O **Aletec Project** é uma aplicação desenvolvida com o objetivo de aplicar conceitos de desenvolvimento de software na criação de uma solução prática e funcional. O projeto busca demonstrar conhecimentos técnicos em programação, organização de código e desenvolvimento de sistemas, oferecendo uma base sólida para evolução e melhorias futuras.
+Este projeto surgiu a partir de uma necessidade real.
 
-## 🇺🇸 About the Project
+Durante o dia a dia, meu pai realizava o controle de produtos utilizando um caderno, o que tornava o processo pouco eficiente, sujeito a erros e difícil de manter atualizado.
 
-**Aletec Project** is an application developed to apply software development concepts in creating a practical and functional solution. The project demonstrates technical skills in programming, code organization, and system development, providing a solid foundation for future improvements.
+A partir disso, desenvolvi uma solução digital simples e direta, com o objetivo de substituir esse controle manual por uma aplicação mais organizada, acessível e confiável.
 
----
-
-## 🚀 Funcionalidades | Features
-
-### 🇧🇷 Funcionalidades
-
-* ⚙️ Implementação de funcionalidades práticas
-* 🧩 Organização modular do código
-* 📈 Estrutura preparada para evolução
-* 💡 Aplicação de conceitos de desenvolvimento
-
-### 🇺🇸 Features
-
-* ⚙️ Implementation of practical features
-* 🧩 Modular code organization
-* 📈 Structure designed for scalability
-* 💡 Application of development concepts
+A proposta não é criar um sistema complexo de gestão, mas sim uma ferramenta prática — uma espécie de **“planilha inteligente”**, com melhor usabilidade e estrutura.
 
 ---
 
-## 🛠️ Tecnologias | Technologies
+## 🎯 Problema
 
-* HTML, CSS, JavaScript, Supabase.
-  
+* Falta de organização no controle de produtos
+* Dificuldade em visualizar estoque atualizado
+* Alto risco de erro manual
+* Processo lento e pouco prático
+
 ---
 
-## 📷 Demonstração | Demo
+## 💡 Solução
+
+Uma aplicação web simples que permite:
+
+* Cadastro e edição de produtos
+* Controle de estoque em tempo real
+* Visualização clara das informações
+* Redução de erros operacionais
+
+---
+
+## ⚙️ Tecnologias Utilizadas
+
+* **Frontend:** React
+* **Backend as a Service:** Supabase
+* **Banco de Dados:** PostgreSQL
+* **Estilização:** CSS / (adicione se usar Tailwind, etc.)
+
+---
+
+## 📷 Demonstração
 
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/febc3c64-80f6-4a88-9d5d-123c57ffa913" />
 <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/87487d48-43ea-49a3-9a2c-4fef54dd2383" />
@@ -46,45 +53,53 @@ O **Aletec Project** é uma aplicação desenvolvida com o objetivo de aplicar c
 
 ---
 
+### 🔹 Decisões Técnicas
 
-## 📚 Contexto | Context
-
-### 🇧🇷
-
-Este projeto surgiu a partir de uma necessidade real do dia a dia.
-Meu pai realizava o controle dos produtos que vendia utilizando um caderno, o que dificultava a organização, visualização e atualização das informações. A partir disso, decidi desenvolver uma solução digital simples, com o objetivo de facilitar esse processo.
-
-A proposta do sistema não é automatizar reposição de estoque ou gerar previsões, mas sim oferecer um controle claro e direto dos produtos disponíveis para venda, funcionando como uma “planilha inteligente”, porém mais organizada e acessível.
-
-Além de resolver um problema real, o projeto também foi uma oportunidade de aplicar na prática conceitos de desenvolvimento web, integração com banco de dados e construção de aplicações completas.
-
-### 🇺🇸
-
-This project was created to solve a real-world problem.
-My father used to manage his products manually in a notebook, which made it difficult to organize, update, and visualize the information. Based on that, I decided to build a simple digital solution to improve this process.
-
-The goal of the system is not to automate stock replenishment or generate predictions, but to provide a clear and straightforward way to control available products, working like a “smart spreadsheet”, but more organized and accessible.
-
-Beyond solving a real problem, this project was also an opportunity to apply software development concepts in practice, including web development, database integration, and building complete applications.
+* **Service Layer:** centraliza chamadas ao banco e evita duplicação de código
+* **Validação de dados:** garante integridade antes da persistência
+* **Separação de responsabilidades:** melhora manutenção e escalabilidade
 
 ---
 
-## 🔒 Licença | License
+## 🔐 Integridade dos Dados
 
-### 🇧🇷
+Mesmo sendo um sistema simples e de uso individual, foram aplicadas boas práticas:
 
-© 2026 Gustavo Dornellas. Todos os direitos reservados.
-Este projeto não pode ser copiado, modificado ou utilizado sem autorização prévia.
-
-### 🇺🇸
-
-© 2026 Gustavo Dornellas. All rights reserved.
-This project may not be copied, modified, or used without prior authorization.
+* Validação de entrada (nome, preço e estoque)
+* Tratamento de erros estruturado
+* Código preparado para futuras regras de segurança (RLS)
 
 ---
 
-## 👨‍💻 Autor | Author
+## 📊 Funcionalidades
 
-**Gustavo Dornellas**
+* Cadastro de produtos
+* Edição de informações
+* Controle de estoque
+* Interface simples e objetiva
 
 ---
+
+## 💡 Diferenciais
+
+* Baseado em um problema real
+* Foco em simplicidade e eficiência
+* Código organizado seguindo boas práticas
+* Estrutura preparada para evolução
+
+---
+
+## 📌 Aprendizados
+
+Este projeto permitiu aplicar na prática:
+
+* Estruturação de aplicações React
+* Integração com banco de dados (Supabase)
+* Organização de código em camadas
+* Tratamento de dados e validações
+
+---
+
+## 👨‍💻 Autor
+
+Gustavo Dornellas
