@@ -2,8 +2,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-headline: var(--font-headline), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-headline: "Trebuchet MS", "Avenir Next", "Segoe UI", sans-serif;
 
   --color-primary: #2b5bb5;
   --color-primary-dim: #1a4ea8;

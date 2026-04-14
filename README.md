@@ -1,105 +1,164 @@
-# 📦 Aletec App
+# Aletec Inventory Control
 
-## 🧠 Sobre o Projeto
+## Sobre o projeto
 
 Este projeto surgiu a partir de uma necessidade real.
 
-Durante o dia a dia, meu pai realizava o controle de produtos utilizando um caderno, o que tornava o processo pouco eficiente, sujeito a erros e difícil de manter atualizado.
+No dia a dia, o controle de produtos era feito manualmente em caderno, o que tornava o processo mais lento, mais sujeito a erro e difícil de manter atualizado. A proposta desta aplicação é substituir esse fluxo manual por uma ferramenta digital simples, direta e confiável.
 
-A partir disso, desenvolvi uma solução digital simples e direta, com o objetivo de substituir esse controle manual por uma aplicação mais organizada, acessível e confiável.
+O objetivo não é criar um ERP ou um sistema empresarial complexo. A ideia é entregar uma solução prática para controle de estoque de placas e unidades, com boa usabilidade, clareza e manutenção fácil.
 
-A proposta não é criar um sistema complexo de gestão, mas sim uma ferramenta prática — uma espécie de **“planilha inteligente”**, com melhor usabilidade e estrutura.
+## Problema que o sistema resolve
 
----
+O sistema foi pensado para ajudar no controle de:
 
-## 🎯 Problema
+- modelos de produto
+- unidades individuais
+- estoque disponível para venda
+- itens vendidos ou utilizados
+- importação e exportação por CSV
 
-* Falta de organização no controle de produtos
-* Dificuldade em visualizar estoque atualizado
-* Alto risco de erro manual
-* Processo lento e pouco prático
+## Solução adotada
 
----
+A aplicação foi construída com Next.js no frontend e Supabase para autenticação e persistência. O código foi organizado para manter a simplicidade do projeto, mas com padrão profissional:
 
-## 💡 Solução
+- interface separada da lógica de dados
+- acesso ao banco centralizado em services
+- validação antes de gravar dados
+- feedback claro para sucesso, erro e carregamento
 
-Uma aplicação web simples que permite:
+## Stack
 
-* Cadastro e edição de produtos
-* Controle de estoque em tempo real
-* Visualização clara das informações
-* Redução de erros operacionais
+- Next.js 15
+- React 19
+- JavaScript
+- Tailwind CSS 4
+- Supabase
+- Lucide React
+- Motion
 
----
+## Arquitetura
 
-## ⚙️ Tecnologias Utilizadas
+```text
+app/
+  layout.jsx
+  page.jsx
 
-* **Frontend:** React
-* **Backend as a Service:** Supabase
-* **Banco de Dados:** PostgreSQL
-* **Estilização:** CSS / (adicione se usar Tailwind, etc.)
+src/
+  components/
+  hooks/
+  services/
+  utils/
+  views/
 
----
+supabase/
+  migrations/
+```
 
-## 📷 Demonstração
+### Responsabilidade de cada pasta
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/febc3c64-80f6-4a88-9d5d-123c57ffa913" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/87487d48-43ea-49a3-9a2c-4fef54dd2383" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/031886c2-a16e-444e-8b4c-53d7ec04b3a0" />
+- `app/`: entrada de rotas e layout global
+- `src/views/`: composição das telas principais
+- `src/components/`: componentes reutilizáveis de interface
+- `src/hooks/`: lógica de estado e orquestração do inventário
+- `src/services/`: autenticação e acesso ao Supabase
+- `src/utils/`: validações, constantes, CSV e helpers
+- `supabase/migrations/`: histórico de evolução do banco
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/633ab814-3597-4720-9ac2-4372ceeccc77" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/582b417b-e8d9-4014-9c2b-ec0f5ba6256e" />
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/ada22941-155f-4ce3-9a44-ca3e6cef1e4c" />
+## Funcionalidades
 
----
+- autenticação com Supabase
+- cadastro, edição e remoção de produtos
+- cadastro e remoção de unidades
+- atualização de status das unidades
+- dashboard com visão geral do estoque
+- importação e exportação CSV
+- validação antes de persistir dados
+- feedback visual de carregamento, sucesso, erro e vazio
 
-### 🔹 Decisões Técnicas
+## Qualidade de código aplicada
 
-* **Service Layer:** centraliza chamadas ao banco e evita duplicação de código
-* **Validação de dados:** garante integridade antes da persistência
-* **Separação de responsabilidades:** melhora manutenção e escalabilidade
+- service layer centralizada
+- respostas padronizadas de sucesso e erro
+- separação clara entre UI, estado e persistência
+- validações explícitas para produto e unidade
+- limpeza de código legado e arquivos obsoletos
+- configuração segura de ambiente
+- estrutura preparada para crescer sem ficar complexa
 
----
+## Variáveis de ambiente
 
-## 🔐 Integridade dos Dados
+Use o arquivo `.env.example` como referência:
 
-Mesmo sendo um sistema simples e de uso individual, foram aplicadas boas práticas:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
 
-* Validação de entrada (nome, preço e estoque)
-* Tratamento de erros estruturado
-* Código preparado para futuras regras de segurança (RLS)
+Crie um `.env.local` apenas no ambiente local e não o envie para o repositório.
 
----
+## Como rodar o projeto
 
-## 📊 Funcionalidades
+### 1. Instalar dependências
 
-* Cadastro de produtos
-* Edição de informações
-* Controle de estoque
-* Interface simples e objetiva
+```bash
+npm install
+```
 
----
+### 2. Configurar variáveis de ambiente
 
-## 💡 Diferenciais
+Crie o arquivo `.env.local` com as credenciais do seu projeto Supabase.
 
-* Baseado em um problema real
-* Foco em simplicidade e eficiência
-* Código organizado seguindo boas práticas
-* Estrutura preparada para evolução
+### 3. Rodar em desenvolvimento
 
----
+```bash
+npm run dev
+```
 
-## 📌 Aprendizados
+### 4. Rodar lint
 
-Este projeto permitiu aplicar na prática:
+```bash
+npm run lint
+```
 
-* Estruturação de aplicações React
-* Integração com banco de dados (Supabase)
-* Organização de código em camadas
-* Tratamento de dados e validações
+### 5. Gerar build de produção
 
----
+```bash
+npm run build
+npm run start
+```
 
-## 👨‍💻 Autor
+## Banco de dados
+
+As migrações SQL ficam em:
+
+```text
+supabase/migrations
+```
+
+Elas devem ser aplicadas no projeto Supabase antes de usar a aplicação em um ambiente novo.
+
+## Segurança dentro do escopo do projeto
+
+Foram aplicadas melhorias leves, mas reais, para o escopo da aplicação:
+
+- validação de payload antes de gravar no banco
+- acesso ao banco centralizado
+- ausência de segredos versionados
+- mensagens de erro amigáveis na interface
+- estrutura preparada para funcionar bem com políticas RLS do Supabase
+
+## Melhorias futuras
+
+- adicionar testes para services e validações
+- adicionar um sistema de toast para múltiplas notificações
+- registrar metadados de auditoria se houver necessidade de múltiplos usuários
+- adicionar melhorias incrementais de UX conforme o uso real do sistema
+
+## Autor
 
 Gustavo Dornellas
+
+## Licença
+
+Projeto privado. Todos os direitos reservados.
