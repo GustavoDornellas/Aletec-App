@@ -36,12 +36,15 @@ export function InventoryList({
   onEditProduct,
   onPreviewImage,
   onToggleExpanded,
+  onUpdateUnitBox,
   onUpdateUnitQuantity,
   onUpdateUnitStatus,
   savingUnitQuantityId,
+  savingUnitBoxId,
   updatingUnitId,
 }) {
   const [quantityDrafts, setQuantityDrafts] = useState({});
+  const [boxDrafts, setBoxDrafts] = useState({});
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm dark:border-[#45413c] dark:bg-[#34322f]">
@@ -127,6 +130,9 @@ export function InventoryList({
                         }`}
                       >
                         {product.available || 0} Disponiveis
+                      </p>
+                      <p className="mt-1 text-[10px] font-medium text-slate-500 dark:text-blue-300/75">
+                        Caixa: {product.boxSummary || 'Sem caixa informada'}
                       </p>
                     </div>
 
@@ -229,6 +235,9 @@ export function InventoryList({
                     >
                       {product.available || 0} Disponiveis
                     </span>
+                    <span className="mt-1 text-[10px] font-medium text-slate-500 dark:text-blue-300/75">
+                      Caixa: {product.boxSummary || 'Sem caixa informada'}
+                    </span>
                   </div>
                 </div>
 
@@ -289,10 +298,15 @@ export function InventoryList({
 
                       {visibleUnits.map((unit) => {
                         const quantityDraft = quantityDrafts[unit.id] ?? String(unit.quantity || 1);
+                        const boxDraft = boxDrafts[unit.id] ?? unit.box ?? '';
                         const parsedQuantityDraft = Number.parseInt(quantityDraft, 10);
                         const hasInvalidQuantityDraft =
                           !Number.isFinite(parsedQuantityDraft) || parsedQuantityDraft < 1;
                         const hasUnchangedQuantity = String(unit.quantity || 1) === quantityDraft.trim();
+                        const normalizedUnitBox = String(unit.box ?? '').trim();
+                        const normalizedBoxDraft = boxDraft.trim();
+                        const hasInvalidBoxDraft = normalizedBoxDraft.length > 60;
+                        const hasUnchangedBox = normalizedUnitBox === normalizedBoxDraft;
 
                         return (
                           <div
@@ -332,6 +346,39 @@ export function InventoryList({
                               </div>
 
                               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                                <div className="flex items-center gap-2">
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                                    Caixa
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={boxDraft}
+                                    maxLength={60}
+                                    onChange={(event) =>
+                                      setBoxDrafts((current) => ({
+                                        ...current,
+                                        [unit.id]: event.target.value,
+                                      }))
+                                    }
+                                    disabled={savingUnitBoxId === unit.id}
+                                    placeholder="Sem caixa"
+                                    className="w-32 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-900 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => onUpdateUnitBox(unit.id, boxDraft)}
+                                    disabled={
+                                      savingUnitBoxId === unit.id ||
+                                      hasInvalidBoxDraft ||
+                                      hasUnchangedBox
+                                    }
+                                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-bold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#2f2c29]"
+                                  >
+                                    <Check size={12} />
+                                    Salvar
+                                  </button>
+                                </div>
+
                                 <div className="flex items-center gap-2">
                                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
                                     Quantidade

@@ -7,6 +7,22 @@ import {
   UNIT_STATUS_SOLD,
 } from '@/utils/produtoConstants';
 
+function normalizeBoxLabel(box) {
+  return String(box ?? '').trim();
+}
+
+function buildProductBoxSummary(boxes) {
+  if (boxes.length === 0) {
+    return 'Sem caixa informada';
+  }
+
+  if (boxes.length <= 2) {
+    return boxes.join(', ');
+  }
+
+  return `${boxes.slice(0, 2).join(', ')} +${boxes.length - 2}`;
+}
+
 export function buildUnitsByProduct(units) {
   return units.reduce((accumulator, unit) => {
     if (!accumulator[unit.productId]) {
@@ -15,6 +31,7 @@ export function buildUnitsByProduct(units) {
 
     accumulator[unit.productId].push({
       ...unit,
+      box: normalizeBoxLabel(unit.box),
       status: normalizeUnitStatus(unit.status),
     });
 
@@ -26,6 +43,7 @@ function getProductMetrics(productUnits) {
   return productUnits.reduce(
     (totals, unit) => {
       const quantity = unit.quantity || 1;
+      const normalizedBox = normalizeBoxLabel(unit.box);
 
       totals.total += quantity;
 
@@ -37,9 +55,13 @@ function getProductMetrics(productUnits) {
         totals.sold += quantity;
       }
 
+      if (normalizedBox) {
+        totals.boxes.add(normalizedBox);
+      }
+
       return totals;
     },
-    { total: 0, available: 0, sold: 0 }
+    { total: 0, available: 0, sold: 0, boxes: new Set() }
   );
 }
 
@@ -47,10 +69,17 @@ export function enrichProducts(products, unitsByProduct) {
   return products.map((product) => {
     const productUnits = unitsByProduct[product.id] || [];
     const metrics = getProductMetrics(productUnits);
+    const boxes = [...metrics.boxes].sort((firstBox, secondBox) =>
+      firstBox.localeCompare(secondBox, 'pt-BR')
+    );
 
     return {
       ...product,
-      ...metrics,
+      total: metrics.total,
+      available: metrics.available,
+      sold: metrics.sold,
+      boxes,
+      boxSummary: buildProductBoxSummary(boxes),
     };
   });
 }

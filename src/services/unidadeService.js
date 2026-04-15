@@ -14,6 +14,7 @@ function mapUnidade(row) {
     id: row.id,
     productId: row.product_id,
     sn: row.sn,
+    box: row.storage_box || '',
     status: normalizeUnitStatus(row.status),
     quantity: row.quantity || 1,
     image: row.image,
@@ -26,6 +27,7 @@ function buildUnidadePayload(unidade) {
   return {
     product_id: unidade.productId,
     sn: String(unidade.sn ?? '').trim(),
+    storage_box: String(unidade.box ?? unidade.caixa ?? '').trim() || null,
     status: toDatabaseUnitStatus(unidade.status),
     quantity: Number(unidade.quantity ?? 1),
     image: unidade.image || null,
@@ -209,6 +211,37 @@ export async function updateUnidadeQuantity(unitId, quantity) {
     return createSuccessResponse(mapUnidade(data), 'Quantidade atualizada com sucesso.');
   } catch (error) {
     return mapSupabaseError(error, 'Nao foi possivel atualizar a quantidade da unidade.');
+  }
+}
+
+export async function updateUnidadeBox(unitId, box) {
+  const normalizedBox = String(box ?? '').trim();
+
+  if (normalizedBox.length > 60) {
+    return createErrorResponse('Informe uma caixa com no maximo 60 caracteres.', {
+      code: 'validation_error',
+      fields: {
+        box: 'Informe uma caixa com no maximo 60 caracteres.',
+      },
+    });
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('units')
+      .update({ storage_box: normalizedBox || null })
+      .eq('id', unitId)
+      .select('*')
+      .single();
+
+    if (error) {
+      return mapSupabaseError(error, 'Nao foi possivel atualizar a caixa da unidade.');
+    }
+
+    return createSuccessResponse(mapUnidade(data), 'Caixa atualizada com sucesso.');
+  } catch (error) {
+    return mapSupabaseError(error, 'Nao foi possivel atualizar a caixa da unidade.');
   }
 }
 

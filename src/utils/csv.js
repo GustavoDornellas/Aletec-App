@@ -11,6 +11,7 @@ export const CSV_FIELDS = [
   { key: 'preco', label: 'Valor Unitario (R$)', aliases: ['preco', 'valor', 'valor_unitario'] },
   { key: 'status_produto', label: 'Status do Produto', aliases: ['status_produto'] },
   { key: 'serial', label: 'Codigo da placa', aliases: ['serial', 'sn', 'codigo_da_placa'] },
+  { key: 'caixa', label: 'Caixa', aliases: ['caixa', 'box', 'localizacao'] },
   { key: 'status_unidade', label: 'Status da Unidade', aliases: ['status_unidade', 'status'] },
   { key: 'quantidade', label: 'Quantidade', aliases: ['quantidade', 'qtd'] },
 ];
@@ -170,6 +171,7 @@ export function buildInventoryCsv(products, unitsByProduct) {
             '',
             '',
             '',
+            '',
           ],
         ];
       }
@@ -183,6 +185,7 @@ export function buildInventoryCsv(products, unitsByProduct) {
           product.price.toFixed(2),
           product.status,
           unit.sn,
+          unit.box || '',
           getUnitStatusLabel(unit.status),
           unit.quantity,
         ]);
@@ -206,6 +209,7 @@ export function mapCsvRowToPayload(entry) {
     },
     unidade: {
       sn: normalizeCsvValue(entry.serial),
+      box: normalizeCsvValue(entry.caixa),
       status: normalizeUnitStatus(normalizeCsvValue(entry.status_unidade) || UNIT_STATUS_AVAILABLE),
       quantity: Number.parseInt(normalizeCsvValue(entry.quantidade), 10) || 1,
       image: null,

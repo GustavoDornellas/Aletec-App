@@ -30,6 +30,7 @@ export function InventoryView({
   onRemoveUnit = async () => ({ success: false, error: { message: 'Remocao indisponivel.' } }),
   onSaveProduct = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
   onSaveUnit = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
+  onUpdateUnitBox = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
   onUpdateUnitQuantity = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
   onUpdateUnitStatus = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
 }) {
@@ -47,6 +48,7 @@ export function InventoryView({
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deletingProductId, setDeletingProductId] = useState(null);
   const [deletingUnitId, setDeletingUnitId] = useState(null);
+  const [savingUnitBoxId, setSavingUnitBoxId] = useState(null);
   const [savingUnitQuantityId, setSavingUnitQuantityId] = useState(null);
   const [updatingUnitId, setUpdatingUnitId] = useState(null);
   const deferredSearchTerm = useDeferredValue(searchTerm);
@@ -238,6 +240,26 @@ export function InventoryView({
     setSavingUnitQuantityId(null);
   }
 
+  async function handleUpdateUnitBox(unitId, box) {
+    setSavingUnitBoxId(unitId);
+    const response = await onUpdateUnitBox(unitId, box);
+
+    if (!response.success) {
+      showFeedback({
+        type: 'error',
+        message: response.error.message,
+      });
+      setSavingUnitBoxId(null);
+      return;
+    }
+
+    showFeedback({
+      type: 'success',
+      message: response.message,
+    });
+    setSavingUnitBoxId(null);
+  }
+
   return (
     <div className="space-y-6 p-4 md:p-8">
       <FeedbackAlert
@@ -328,6 +350,7 @@ export function InventoryView({
         deletingProductId={deletingProductId}
         deletingUnitId={deletingUnitId}
         updatingUnitId={updatingUnitId}
+        savingUnitBoxId={savingUnitBoxId}
         savingUnitQuantityId={savingUnitQuantityId}
         filteredProducts={filteredProducts}
         getVisibleUnits={getVisibleUnits}
@@ -345,6 +368,7 @@ export function InventoryView({
         onToggleExpanded={(productId) =>
           setExpandedId((currentId) => (currentId === productId ? null : productId))
         }
+        onUpdateUnitBox={handleUpdateUnitBox}
         onUpdateUnitQuantity={handleUpdateUnitQuantity}
         onUpdateUnitStatus={handleUpdateUnitStatus}
       />

@@ -19,6 +19,7 @@ import {
   createUnidade,
   deleteUnidade,
   listUnidades,
+  updateUnidadeBox,
   updateUnidadeQuantity,
   updateUnidadeStatus,
 } from '@/services/unidadeService';
@@ -212,6 +213,17 @@ export function useProdutos() {
     return response;
   }
 
+  async function changeUnitBox(unitId, box) {
+    const response = await updateUnidadeBox(unitId, box);
+
+    if (!response.success) {
+      return response;
+    }
+
+    await loadInventory({ keepScreen: true });
+    return response;
+  }
+
   async function removeUnit(unitId) {
     const response = await deleteUnidade(unitId);
 
@@ -336,6 +348,7 @@ export function useProdutos() {
     saveUnit,
     changeUnitStatus,
     changeUnitQuantity,
+    changeUnitBox,
     removeUnit,
     importRows,
   };

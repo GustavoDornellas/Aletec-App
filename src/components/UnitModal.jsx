@@ -14,6 +14,7 @@ import {
 export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
   const [formData, setFormData] = useState({
     sn: '',
+    box: '',
     status: UNIT_STATUS_AVAILABLE,
     quantity: 1,
     image: '',
@@ -88,6 +89,7 @@ export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
     });
     setFormData({
       sn: '',
+      box: '',
       status: UNIT_STATUS_AVAILABLE,
       quantity: 1,
       image: '',
@@ -133,6 +135,23 @@ export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
                 />
                 {fieldErrors.sn ? (
                   <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.sn}</p>
+                ) : null}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                  Caixa
+                </label>
+                <input
+                  type="text"
+                  value={formData.box}
+                  onChange={(event) => setFormData({ ...formData, box: event.target.value })}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+                  placeholder="Ex: Caixa 1 ou Prateleira 3"
+                  maxLength={60}
+                />
+                {fieldErrors.box ? (
+                  <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.box}</p>
                 ) : null}
               </div>
 

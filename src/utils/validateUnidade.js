@@ -4,6 +4,7 @@ export function validateUnidade(unidade) {
   const errors = {};
   const productId = String(unidade.productId ?? '').trim();
   const serial = String(unidade.sn ?? unidade.serial ?? '').trim();
+  const box = String(unidade.box ?? unidade.caixa ?? '').trim();
   const quantity =
     typeof unidade.quantity === 'number'
       ? unidade.quantity
@@ -24,6 +25,10 @@ export function validateUnidade(unidade) {
 
   if (!UNIT_STATUS_OPTIONS.includes(status)) {
     errors.status = 'Selecione um status valido para a unidade.';
+  }
+
+  if (box.length > 60) {
+    errors.box = 'Informe uma caixa com no maximo 60 caracteres.';
   }
 
   return {
