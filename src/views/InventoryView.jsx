@@ -32,6 +32,7 @@ export function InventoryView({
   onSaveUnit = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
   onUpdateUnitBox = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
   onUpdateUnitQuantity = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
+  onUpdateUnitSerial = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
   onUpdateUnitStatus = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
 }) {
   const importInputRef = useRef(null);
@@ -48,6 +49,7 @@ export function InventoryView({
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deletingProductId, setDeletingProductId] = useState(null);
   const [deletingUnitId, setDeletingUnitId] = useState(null);
+  const [savingUnitSerialId, setSavingUnitSerialId] = useState(null);
   const [savingUnitBoxId, setSavingUnitBoxId] = useState(null);
   const [savingUnitQuantityId, setSavingUnitQuantityId] = useState(null);
   const [updatingUnitId, setUpdatingUnitId] = useState(null);
@@ -260,6 +262,27 @@ export function InventoryView({
     setSavingUnitBoxId(null);
   }
 
+  async function handleUpdateUnitSerial(unitId, serial) {
+    setSavingUnitSerialId(unitId);
+    const response = await onUpdateUnitSerial(unitId, serial);
+
+    if (!response.success) {
+      showFeedback({
+        type: 'error',
+        message: response.error.message,
+      });
+      setSavingUnitSerialId(null);
+      return response;
+    }
+
+    showFeedback({
+      type: 'success',
+      message: response.message,
+    });
+    setSavingUnitSerialId(null);
+    return response;
+  }
+
   return (
     <div className="space-y-6 p-4 md:p-8">
       <FeedbackAlert
@@ -349,6 +372,7 @@ export function InventoryView({
         expandedId={expandedId}
         deletingProductId={deletingProductId}
         deletingUnitId={deletingUnitId}
+        savingUnitSerialId={savingUnitSerialId}
         updatingUnitId={updatingUnitId}
         savingUnitBoxId={savingUnitBoxId}
         savingUnitQuantityId={savingUnitQuantityId}
@@ -370,6 +394,7 @@ export function InventoryView({
         }
         onUpdateUnitBox={handleUpdateUnitBox}
         onUpdateUnitQuantity={handleUpdateUnitQuantity}
+        onUpdateUnitSerial={handleUpdateUnitSerial}
         onUpdateUnitStatus={handleUpdateUnitStatus}
       />
 

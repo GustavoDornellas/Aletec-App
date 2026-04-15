@@ -49,6 +49,21 @@ function validateUnitQuantity(quantity) {
   return null;
 }
 
+function validateUnitSerial(serial) {
+  const normalizedSerial = String(serial ?? '').trim();
+
+  if (!normalizedSerial) {
+    return createErrorResponse('Informe um codigo da placa valido.', {
+      code: 'validation_error',
+      fields: {
+        sn: 'Informe o codigo da placa.',
+      },
+    });
+  }
+
+  return null;
+}
+
 function isUnitStatusConstraintError(error) {
   const message = String(error?.message ?? '').toLowerCase();
   const details = String(error?.details ?? '').toLowerCase();
@@ -242,6 +257,32 @@ export async function updateUnidadeBox(unitId, box) {
     return createSuccessResponse(mapUnidade(data), 'Caixa atualizada com sucesso.');
   } catch (error) {
     return mapSupabaseError(error, 'Nao foi possivel atualizar a caixa da unidade.');
+  }
+}
+
+export async function updateUnidadeSerial(unitId, serial) {
+  const validationError = validateUnitSerial(serial);
+
+  if (validationError) {
+    return validationError;
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('units')
+      .update({ sn: String(serial).trim() })
+      .eq('id', unitId)
+      .select('*')
+      .single();
+
+    if (error) {
+      return mapSupabaseError(error, 'Nao foi possivel atualizar o codigo da placa.');
+    }
+
+    return createSuccessResponse(mapUnidade(data), 'Codigo da placa atualizado com sucesso.');
+  } catch (error) {
+    return mapSupabaseError(error, 'Nao foi possivel atualizar o codigo da placa.');
   }
 }
 

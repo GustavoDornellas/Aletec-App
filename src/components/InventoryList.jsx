@@ -38,11 +38,15 @@ export function InventoryList({
   onToggleExpanded,
   onUpdateUnitBox,
   onUpdateUnitQuantity,
+  onUpdateUnitSerial,
   onUpdateUnitStatus,
+  savingUnitSerialId,
   savingUnitQuantityId,
   savingUnitBoxId,
   updatingUnitId,
 }) {
+  const [editingSerialId, setEditingSerialId] = useState(null);
+  const [serialDrafts, setSerialDrafts] = useState({});
   const [quantityDrafts, setQuantityDrafts] = useState({});
   const [boxDrafts, setBoxDrafts] = useState({});
 
@@ -297,12 +301,16 @@ export function InventoryList({
                       </div>
 
                       {visibleUnits.map((unit) => {
+                        const serialDraft = serialDrafts[unit.id] ?? unit.sn;
                         const quantityDraft = quantityDrafts[unit.id] ?? String(unit.quantity || 1);
                         const boxDraft = boxDrafts[unit.id] ?? unit.box ?? '';
+                        const normalizedSerialDraft = serialDraft.trim();
                         const parsedQuantityDraft = Number.parseInt(quantityDraft, 10);
                         const hasInvalidQuantityDraft =
                           !Number.isFinite(parsedQuantityDraft) || parsedQuantityDraft < 1;
                         const hasUnchangedQuantity = String(unit.quantity || 1) === quantityDraft.trim();
+                        const hasInvalidSerialDraft = !normalizedSerialDraft;
+                        const hasUnchangedSerial = unit.sn === normalizedSerialDraft;
                         const normalizedUnitBox = String(unit.box ?? '').trim();
                         const normalizedBoxDraft = boxDraft.trim();
                         const hasInvalidBoxDraft = normalizedBoxDraft.length > 60;
@@ -331,9 +339,61 @@ export function InventoryList({
                                   </div>
                                 ) : null}
 
-                                <span className="text-xs font-bold text-on-surface dark:text-blue-200">
-                                  {unit.sn}
-                                </span>
+                                {editingSerialId === unit.id ? (
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={serialDraft}
+                                      onChange={(event) =>
+                                        setSerialDrafts((current) => ({
+                                          ...current,
+                                          [unit.id]: event.target.value,
+                                        }))
+                                      }
+                                      disabled={savingUnitSerialId === unit.id}
+                                      className="w-36 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-900 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={async () => {
+                                        const response = await onUpdateUnitSerial(unit.id, serialDraft);
+
+                                        if (response?.success) {
+                                          setEditingSerialId(null);
+                                        }
+                                      }}
+                                      disabled={
+                                        savingUnitSerialId === unit.id ||
+                                        hasInvalidSerialDraft ||
+                                        hasUnchangedSerial
+                                      }
+                                      className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[10px] font-bold text-on-primary transition-all hover:bg-primary-dim disabled:cursor-not-allowed disabled:opacity-60"
+                                    >
+                                      <Check size={12} />
+                                      Salvar
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-on-surface dark:text-blue-200">
+                                      {unit.sn}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setSerialDrafts((current) => ({
+                                          ...current,
+                                          [unit.id]: unit.sn,
+                                        }));
+                                        setEditingSerialId(unit.id);
+                                      }}
+                                      className="rounded-md p-1 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-zinc-400 dark:hover:bg-[#2f2c29]"
+                                      aria-label={`Editar codigo da placa ${unit.sn}`}
+                                    >
+                                      <Edit size={14} />
+                                    </button>
+                                  </div>
+                                )}
 
                                 <span
                                   className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${getStatusBadgeClass(

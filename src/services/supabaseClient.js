@@ -70,6 +70,16 @@ export function mapSupabaseError(error, fallbackMessage) {
     );
   }
 
+  if (
+    normalizedMessage.includes('units_product_id_sn_key') ||
+    (normalizedMessage.includes('duplicate key value') && normalizedMessage.includes('units'))
+  ) {
+    return createErrorResponse(
+      'Ja existe uma unidade com esse codigo da placa para este produto.',
+      { code: 'duplicate_unit' }
+    );
+  }
+
   if (normalizedMessage.includes('row-level security')) {
     return createErrorResponse(
       'Voce nao tem permissao para realizar essa operacao.',

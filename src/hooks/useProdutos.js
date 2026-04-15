@@ -21,6 +21,7 @@ import {
   listUnidades,
   updateUnidadeBox,
   updateUnidadeQuantity,
+  updateUnidadeSerial,
   updateUnidadeStatus,
 } from '@/services/unidadeService';
 import { mapCsvRowToPayload } from '@/utils/csv';
@@ -224,6 +225,17 @@ export function useProdutos() {
     return response;
   }
 
+  async function changeUnitSerial(unitId, serial) {
+    const response = await updateUnidadeSerial(unitId, serial);
+
+    if (!response.success) {
+      return response;
+    }
+
+    await loadInventory({ keepScreen: true });
+    return response;
+  }
+
   async function removeUnit(unitId) {
     const response = await deleteUnidade(unitId);
 
@@ -349,6 +361,7 @@ export function useProdutos() {
     changeUnitStatus,
     changeUnitQuantity,
     changeUnitBox,
+    changeUnitSerial,
     removeUnit,
     importRows,
   };

@@ -82,6 +82,7 @@ export function HomePageContent() {
               onSaveUnit={inventory.saveUnit}
               onUpdateUnitBox={inventory.changeUnitBox}
               onUpdateUnitQuantity={inventory.changeUnitQuantity}
+              onUpdateUnitSerial={inventory.changeUnitSerial}
               onUpdateUnitStatus={inventory.changeUnitStatus}
             />
           )}
