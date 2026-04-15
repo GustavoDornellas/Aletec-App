@@ -19,6 +19,8 @@ export function InventoryView({
   refreshing = false,
   onImportRows = async () => ({ success: false, error: { message: 'Importacao indisponivel.' } }),
   onRemoveProduct = async () => ({ success: false, error: { message: 'Remocao indisponivel.' } }),
+  onRenameBrand = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
+  onReplaceBrand = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
   onRemoveUnit = async () => ({ success: false, error: { message: 'Remocao indisponivel.' } }),
   onSaveProduct = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
   onSaveUnit = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
@@ -295,6 +297,8 @@ export function InventoryView({
         existingBrands={existingBrands}
         isOpen={isProductModalOpen}
         product={selectedProduct}
+        onRenameBrand={onRenameBrand}
+        onReplaceBrand={onReplaceBrand}
         onClose={() => {
           setIsProductModalOpen(false);
           setSelectedProduct(null);

@@ -5,6 +5,8 @@ import {
   createProduto,
   deleteProduto,
   listProdutos,
+  renameProdutoBrand,
+  replaceProdutoBrand,
   updateProduto,
 } from '@/services/produtoService';
 import {
@@ -157,6 +159,28 @@ export function useProdutos() {
     return response;
   }
 
+  async function renameBrand(currentBrand, nextBrand) {
+    const response = await renameProdutoBrand(currentBrand, nextBrand);
+
+    if (!response.success) {
+      return response;
+    }
+
+    await loadInventory({ keepScreen: true });
+    return response;
+  }
+
+  async function replaceBrand(currentBrand, replacementBrand) {
+    const response = await replaceProdutoBrand(currentBrand, replacementBrand);
+
+    if (!response.success) {
+      return response;
+    }
+
+    await loadInventory({ keepScreen: true });
+    return response;
+  }
+
   async function changeUnitQuantity(unitId, quantity) {
     const response = await updateUnidadeQuantity(unitId, quantity);
 
@@ -286,6 +310,8 @@ export function useProdutos() {
     loadInventory,
     saveProduct,
     removeProduct,
+    renameBrand,
+    replaceBrand,
     saveUnit,
     changeUnitStatus,
     changeUnitQuantity,

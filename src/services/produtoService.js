@@ -106,6 +106,74 @@ export async function updateProduto(productId, produto) {
   }
 }
 
+export async function renameProdutoBrand(currentBrand, nextBrand) {
+  const normalizedCurrentBrand = String(currentBrand ?? '').trim();
+  const normalizedNextBrand = String(nextBrand ?? '').trim();
+
+  if (!normalizedCurrentBrand || !normalizedNextBrand) {
+    return createErrorResponse('Informe a marca atual e a nova marca para continuar.', {
+      code: 'validation_error',
+    });
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('products')
+      .update({ name: normalizedNextBrand })
+      .eq('name', normalizedCurrentBrand)
+      .select('*');
+
+    if (error) {
+      return mapSupabaseError(error, 'Nao foi possivel atualizar a marca em todo o sistema.');
+    }
+
+    return createSuccessResponse(
+      (data || []).map(mapProduto),
+      `Marca "${normalizedCurrentBrand}" atualizada para "${normalizedNextBrand}".`
+    );
+  } catch (error) {
+    return mapSupabaseError(error, 'Nao foi possivel atualizar a marca em todo o sistema.');
+  }
+}
+
+export async function replaceProdutoBrand(currentBrand, replacementBrand) {
+  const normalizedCurrentBrand = String(currentBrand ?? '').trim();
+  const normalizedReplacementBrand = String(replacementBrand ?? '').trim();
+
+  if (!normalizedCurrentBrand || !normalizedReplacementBrand) {
+    return createErrorResponse('Selecione uma marca de substituicao para continuar.', {
+      code: 'validation_error',
+    });
+  }
+
+  if (normalizedCurrentBrand.toLowerCase() === normalizedReplacementBrand.toLowerCase()) {
+    return createErrorResponse('Escolha uma marca diferente para substituir a marca atual.', {
+      code: 'validation_error',
+    });
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('products')
+      .update({ name: normalizedReplacementBrand })
+      .eq('name', normalizedCurrentBrand)
+      .select('*');
+
+    if (error) {
+      return mapSupabaseError(error, 'Nao foi possivel excluir a marca selecionada.');
+    }
+
+    return createSuccessResponse(
+      (data || []).map(mapProduto),
+      `Marca "${normalizedCurrentBrand}" substituida por "${normalizedReplacementBrand}".`
+    );
+  } catch (error) {
+    return mapSupabaseError(error, 'Nao foi possivel excluir a marca selecionada.');
+  }
+}
+
 export async function deleteProduto(productId) {
   try {
     const supabase = getSupabaseClient();

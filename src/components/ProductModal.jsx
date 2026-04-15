@@ -10,6 +10,8 @@ export function ProductModal({
   isOpen,
   product,
   onClose,
+  onRenameBrand,
+  onReplaceBrand,
   onSave,
   onFeedback,
 }) {
@@ -71,6 +73,8 @@ export function ProductModal({
                 isSubmitting={isSubmitting}
                 fieldErrors={fieldErrors}
                 onCancel={onClose}
+                onRenameBrand={onRenameBrand}
+                onReplaceBrand={onReplaceBrand}
                 onSubmit={handleSubmit}
                 onFeedback={onFeedback}
               />

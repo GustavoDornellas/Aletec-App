@@ -45,20 +45,31 @@ export function ProductForm({
   isSubmitting,
   fieldErrors = {},
   onCancel,
+  onRenameBrand = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
+  onReplaceBrand = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
   onSubmit,
   onFeedback,
 }) {
   const [formData, setFormData] = useState(() => buildInitialFormData(product));
   const [imageName, setImageName] = useState(() => (product?.image ? 'Imagem atual' : ''));
   const [customBrand, setCustomBrand] = useState('');
-  const [customBrands, setCustomBrands] = useState([]);
-  const [editingCustomBrand, setEditingCustomBrand] = useState(null);
-  const [editingCustomBrandValue, setEditingCustomBrandValue] = useState('');
   const [isAddingBrand, setIsAddingBrand] = useState(false);
+  const [isEditingSelectedBrand, setIsEditingSelectedBrand] = useState(false);
+  const [editedSelectedBrand, setEditedSelectedBrand] = useState('');
+  const [isReplacingSelectedBrand, setIsReplacingSelectedBrand] = useState(false);
+  const [replacementBrand, setReplacementBrand] = useState('');
+  const [customReplacementBrand, setCustomReplacementBrand] = useState('');
+  const [isSavingBrandChange, setIsSavingBrandChange] = useState(false);
 
   const brandOptions = useMemo(() => {
-    return buildBrandOptions([...existingBrands, ...customBrands], formData.name);
-  }, [customBrands, existingBrands, formData.name]);
+    return buildBrandOptions(existingBrands, formData.name);
+  }, [existingBrands, formData.name]);
+
+  const replacementBrandOptions = useMemo(() => {
+    return brandOptions.filter(
+      (brand) => brand.toLowerCase() !== String(formData.name).trim().toLowerCase()
+    );
+  }, [brandOptions, formData.name]);
 
   async function handleImageFileChange(event) {
     const file = event.target.files?.[0];
@@ -109,10 +120,27 @@ export function ProductForm({
 
     setIsAddingBrand(false);
     setCustomBrand('');
+    setIsEditingSelectedBrand(false);
+    setIsReplacingSelectedBrand(false);
+    setReplacementBrand('');
+    setCustomReplacementBrand('');
     setFormData((current) => ({ ...current, name: nextValue }));
   }
 
-  function handleAddBrand() {
+  function handleStartEditSelectedBrand() {
+    setEditedSelectedBrand(formData.name);
+    setIsEditingSelectedBrand(true);
+    setIsReplacingSelectedBrand(false);
+  }
+
+  function handleStartReplaceSelectedBrand() {
+    setReplacementBrand('');
+    setCustomReplacementBrand('');
+    setIsReplacingSelectedBrand(true);
+    setIsEditingSelectedBrand(false);
+  }
+
+  async function handleAddBrand() {
     const normalizedBrand = customBrand.trim();
 
     if (!normalizedBrand) {
@@ -127,8 +155,15 @@ export function ProductForm({
       (brand) => brand.toLowerCase() === normalizedBrand.toLowerCase()
     );
 
-    if (!hasBrand) {
-      setCustomBrands((current) => [...current, normalizedBrand]);
+    if (hasBrand) {
+      setFormData((current) => ({ ...current, name: normalizedBrand }));
+      setCustomBrand('');
+      setIsAddingBrand(false);
+      onFeedback?.({
+        type: 'success',
+        message: `Marca "${normalizedBrand}" selecionada na lista.`,
+      });
+      return;
     }
 
     setFormData((current) => ({ ...current, name: normalizedBrand }));
@@ -136,74 +171,100 @@ export function ProductForm({
     setIsAddingBrand(false);
     onFeedback?.({
       type: 'success',
-      message: `Marca "${normalizedBrand}" adicionada a lista.`,
+      message: `Marca "${normalizedBrand}" adicionada e selecionada.`,
     });
   }
 
-  function startEditingCustomBrand(brand) {
-    setEditingCustomBrand(brand);
-    setEditingCustomBrandValue(brand);
-  }
+  async function handleSaveSelectedBrandEdit() {
+    const currentBrand = String(formData.name ?? '').trim();
+    const nextBrand = editedSelectedBrand.trim();
 
-  function cancelEditingCustomBrand() {
-    setEditingCustomBrand(null);
-    setEditingCustomBrandValue('');
-  }
-
-  function handleSaveEditedCustomBrand(previousBrand) {
-    const normalizedBrand = editingCustomBrandValue.trim();
-
-    if (!normalizedBrand) {
+    if (!currentBrand) {
       onFeedback?.({
         type: 'error',
-        message: 'Informe um nome valido para a marca.',
+        message: 'Selecione uma marca antes de editar.',
       });
       return;
     }
 
-    const hasDuplicateBrand = brandOptions.some(
-      (brand) =>
-        brand.toLowerCase() === normalizedBrand.toLowerCase() &&
-        brand.toLowerCase() !== previousBrand.toLowerCase()
-    );
-
-    if (hasDuplicateBrand) {
+    if (!nextBrand) {
       onFeedback?.({
         type: 'error',
-        message: 'Essa marca ja existe na lista.',
+        message: 'Informe o novo nome da marca.',
       });
       return;
     }
 
-    setCustomBrands((current) =>
-      current.map((brand) => (brand === previousBrand ? normalizedBrand : brand))
-    );
-
-    if (formData.name === previousBrand) {
-      setFormData((current) => ({ ...current, name: normalizedBrand }));
+    if (currentBrand.toLowerCase() === nextBrand.toLowerCase()) {
+      onFeedback?.({
+        type: 'error',
+        message: 'Informe uma marca diferente da atual.',
+      });
+      return;
     }
 
-    cancelEditingCustomBrand();
+    setIsSavingBrandChange(true);
+    const response = await onRenameBrand(currentBrand, nextBrand);
+    setIsSavingBrandChange(false);
+
+    if (!response.success) {
+      onFeedback?.({
+        type: 'error',
+        message: response.error.message,
+      });
+      return;
+    }
+
+    setFormData((current) => ({ ...current, name: nextBrand }));
+    setEditedSelectedBrand('');
+    setIsEditingSelectedBrand(false);
     onFeedback?.({
       type: 'success',
-      message: `Marca "${previousBrand}" atualizada para "${normalizedBrand}".`,
+      message: response.message,
     });
   }
 
-  function handleRemoveCustomBrand(brandToRemove) {
-    setCustomBrands((current) => current.filter((brand) => brand !== brandToRemove));
+  async function handleReplaceSelectedBrand() {
+    const currentBrand = String(formData.name ?? '').trim();
+    const normalizedReplacementBrand = String(
+      replacementBrand === ADD_BRAND_OPTION ? customReplacementBrand : replacementBrand
+    ).trim();
 
-    if (formData.name === brandToRemove) {
-      setFormData((current) => ({ ...current, name: '' }));
+    if (!currentBrand) {
+      onFeedback?.({
+        type: 'error',
+        message: 'Selecione uma marca antes de excluir.',
+      });
+      return;
     }
 
-    if (editingCustomBrand === brandToRemove) {
-      cancelEditingCustomBrand();
+    if (!normalizedReplacementBrand) {
+      onFeedback?.({
+        type: 'error',
+        message: 'Selecione ou informe a marca que vai substituir a atual.',
+      });
+      return;
     }
 
+    setIsSavingBrandChange(true);
+    const response = await onReplaceBrand(currentBrand, normalizedReplacementBrand);
+    setIsSavingBrandChange(false);
+
+    if (!response.success) {
+      onFeedback?.({
+        type: 'error',
+        message: response.error.message,
+      });
+      return;
+    }
+
+    setFormData((current) => ({ ...current, name: normalizedReplacementBrand }));
+    setReplacementBrand('');
+    setCustomReplacementBrand('');
+    setIsReplacingSelectedBrand(false);
     onFeedback?.({
       type: 'success',
-      message: `Marca "${brandToRemove}" removida da lista.`,
+      message: response.message,
     });
   }
 
@@ -246,6 +307,138 @@ export function ProductForm({
           ) : null}
         </div>
 
+        {formData.name ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 dark:border-[#4a4540] dark:bg-[#2b2927]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                  Marca selecionada
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-blue-50">
+                  {formData.name}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleStartEditSelectedBrand}
+                  disabled={isSubmitting || isSavingBrandChange}
+                  className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#34322f]"
+                >
+                  <Pencil size={12} />
+                  Editar marca
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleStartReplaceSelectedBrand}
+                  disabled={isSubmitting || isSavingBrandChange}
+                  className="inline-flex items-center gap-1 rounded-md border border-red-200 px-3 py-1.5 text-xs font-bold text-red-600 transition-all hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/30"
+                >
+                  <Trash2 size={12} />
+                  Excluir marca
+                </button>
+              </div>
+            </div>
+
+            {isEditingSelectedBrand ? (
+              <div className="mt-3 space-y-2 rounded-lg border border-slate-200 bg-white p-3 dark:border-[#4a4540] dark:bg-[#34322f]">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                  Novo nome da marca
+                </label>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="text"
+                    value={editedSelectedBrand}
+                    onChange={(event) => setEditedSelectedBrand(event.target.value)}
+                    className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+                    placeholder="Digite a nova marca"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveSelectedBrandEdit}
+                    disabled={isSavingBrandChange}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-all hover:bg-primary-dim disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Check size={14} />
+                    Salvar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingSelectedBrand(false)}
+                    disabled={isSavingBrandChange}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#34322f]"
+                  >
+                    <X size={14} />
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {isReplacingSelectedBrand ? (
+              <div className="mt-3 space-y-2 rounded-lg border border-red-200 bg-white p-3 dark:border-red-900/60 dark:bg-[#34322f]">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                  Substituir por
+                </label>
+                <select
+                  value={replacementBrand}
+                  onChange={(event) => setReplacementBrand(event.target.value)}
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+                >
+                  <option value="">Selecione a marca de substituicao</option>
+                  {replacementBrandOptions.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                  <option value={ADD_BRAND_OPTION}>Adicionar nova marca</option>
+                </select>
+
+                {replacementBrand === ADD_BRAND_OPTION ? (
+                  <input
+                    type="text"
+                    value={customReplacementBrand}
+                    onChange={(event) => setCustomReplacementBrand(event.target.value)}
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+                    placeholder="Digite a nova marca de substituicao"
+                  />
+                ) : null}
+
+                <p className="text-xs text-slate-500 dark:text-blue-200/75">
+                  Todos os itens com a marca atual serao atualizados para a marca escolhida.
+                </p>
+
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={handleReplaceSelectedBrand}
+                    disabled={isSavingBrandChange}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Trash2 size={14} />
+                    Confirmar exclusao
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsReplacingSelectedBrand(false);
+                      setReplacementBrand('');
+                      setCustomReplacementBrand('');
+                    }}
+                    disabled={isSavingBrandChange}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#34322f]"
+                  >
+                    <X size={14} />
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
         {isAddingBrand ? (
           <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-3 dark:border-[#4a4540] dark:bg-[#2b2927]">
             <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
@@ -267,83 +460,18 @@ export function ProductForm({
                 <Plus size={16} />
                 Adicionar
               </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddingBrand(false);
+                  setCustomBrand('');
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-100 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#34322f]"
+              >
+                <X size={14} />
+                Fechar
+              </button>
             </div>
-
-            {customBrands.length > 0 ? (
-              <div className="rounded-lg border border-slate-200 bg-white/80 p-3 dark:border-[#4a4540] dark:bg-[#34322f]">
-                <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
-                  Marcas adicionadas neste cadastro
-                </p>
-
-                <div className="space-y-2">
-                  {customBrands.map((brand) => {
-                    const isEditing = editingCustomBrand === brand;
-
-                    return (
-                      <div
-                        key={brand}
-                        className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-[#4a4540] dark:bg-[#2f2c29] sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        {isEditing ? (
-                          <input
-                            type="text"
-                            value={editingCustomBrandValue}
-                            onChange={(event) => setEditingCustomBrandValue(event.target.value)}
-                            className="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#34322f] dark:text-blue-50"
-                          />
-                        ) : (
-                          <span className="text-sm font-medium text-slate-700 dark:text-blue-100">
-                            {brand}
-                          </span>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          {isEditing ? (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => handleSaveEditedCustomBrand(brand)}
-                                className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs font-bold text-on-primary transition-all hover:bg-primary-dim"
-                              >
-                                <Check size={12} />
-                                Salvar
-                              </button>
-                              <button
-                                type="button"
-                                onClick={cancelEditingCustomBrand}
-                                className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-600 transition-all hover:bg-slate-100 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#3a3734]"
-                              >
-                                <X size={12} />
-                                Cancelar
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                onClick={() => startEditingCustomBrand(brand)}
-                                className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-bold text-slate-600 transition-all hover:bg-slate-100 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#3a3734]"
-                              >
-                                <Pencil size={12} />
-                                Editar
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveCustomBrand(brand)}
-                                className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-bold text-red-600 transition-all hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/30"
-                              >
-                                <Trash2 size={12} />
-                                Excluir
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
           </div>
         ) : null}
       </div>

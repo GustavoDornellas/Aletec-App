@@ -74,6 +74,8 @@ export function HomePageContent() {
               refreshing={inventory.refreshing}
               onImportRows={inventory.importRows}
               onRemoveProduct={inventory.removeProduct}
+              onRenameBrand={inventory.renameBrand}
+              onReplaceBrand={inventory.replaceBrand}
               onRemoveUnit={inventory.removeUnit}
               onSaveProduct={inventory.saveProduct}
               onSaveUnit={inventory.saveUnit}
