@@ -3,10 +3,7 @@
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { Check, Loader2, Pencil, Plus, Trash2, X } from 'lucide-react';
-import {
-  PRODUCT_BRAND_OPTIONS,
-  PRODUCT_CATEGORIES,
-} from '@/utils/produtoConstants';
+import { PRODUCT_CATEGORIES } from '@/utils/produtoConstants';
 import { resizeImage } from '@/utils/image';
 
 const ADD_BRAND_OPTION = '__add-new-brand__';
@@ -34,7 +31,7 @@ function buildInitialFormData(product) {
 }
 
 function buildBrandOptions(existingBrands = [], currentBrand = '') {
-  return [...new Set([...PRODUCT_BRAND_OPTIONS, ...existingBrands, currentBrand].filter(Boolean))].sort(
+  return [...new Set([...existingBrands, currentBrand].filter(Boolean))].sort(
     (firstBrand, secondBrand) => firstBrand.localeCompare(secondBrand, 'pt-BR')
   );
 }

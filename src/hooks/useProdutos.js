@@ -2,6 +2,12 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
+  addBrandToCatalog,
+  loadBrandCatalog,
+  renameBrandInCatalog,
+  replaceBrandInCatalog,
+} from '@/services/brandCatalogService';
+import {
   createProduto,
   deleteProduto,
   listProdutos,
@@ -16,11 +22,12 @@ import {
   updateUnidadeQuantity,
   updateUnidadeStatus,
 } from '@/services/unidadeService';
-import { buildUnitsByProduct, createInventorySummary, enrichProducts } from '@/utils/inventory';
 import { mapCsvRowToPayload } from '@/utils/csv';
+import { buildUnitsByProduct, createInventorySummary, enrichProducts } from '@/utils/inventory';
 
 export function useProdutos() {
   const [products, setProducts] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [unitsByProduct, setUnitsByProduct] = useState({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,6 +41,10 @@ export function useProdutos() {
       products: nextProducts,
       unitsByProduct: nextUnitsByProduct,
     };
+  }
+
+  function syncBrandCatalog(nextProducts) {
+    setBrands(loadBrandCatalog(nextProducts.map((product) => product.brand || product.name)));
   }
 
   function finishLoading() {
@@ -51,10 +62,7 @@ export function useProdutos() {
       setLoading(true);
     }
 
-    const [productsResponse, unitsResponse] = await Promise.all([
-      listProdutos(),
-      listUnidades(),
-    ]);
+    const [productsResponse, unitsResponse] = await Promise.all([listProdutos(), listUnidades()]);
 
     if (!productsResponse.success) {
       setError(productsResponse.error.message);
@@ -71,6 +79,7 @@ export function useProdutos() {
     const inventoryData = buildInventoryData(productsResponse, unitsResponse);
 
     setProducts(inventoryData.products);
+    syncBrandCatalog(inventoryData.products);
     setUnitsByProduct(inventoryData.unitsByProduct);
     finishLoading();
 
@@ -84,17 +93,18 @@ export function useProdutos() {
     let isActive = true;
 
     async function initializeInventory() {
-      const [productsResponse, unitsResponse] = await Promise.all([
-        listProdutos(),
-        listUnidades(),
-      ]);
+      const [productsResponse, unitsResponse] = await Promise.all([listProdutos(), listUnidades()]);
 
       if (!isActive) {
         return;
       }
 
       if (!productsResponse.success || !unitsResponse.success) {
-        setError(productsResponse.error?.message || unitsResponse.error?.message || 'Nao foi possivel carregar o inventario.');
+        setError(
+          productsResponse.error?.message ||
+            unitsResponse.error?.message ||
+            'Nao foi possivel carregar o inventario.'
+        );
         setLoading(false);
         return;
       }
@@ -102,6 +112,7 @@ export function useProdutos() {
       const inventoryData = buildInventoryData(productsResponse, unitsResponse);
 
       setProducts(inventoryData.products);
+      syncBrandCatalog(inventoryData.products);
       setUnitsByProduct(inventoryData.unitsByProduct);
       setLoading(false);
     }
@@ -114,12 +125,17 @@ export function useProdutos() {
   }, []);
 
   async function saveProduct(product, currentProduct) {
+    const normalizedBrand = String(product.brand ?? product.name ?? '').trim();
     const response = currentProduct?.id
       ? await updateProduto(currentProduct.id, product)
       : await createProduto(product);
 
     if (!response.success) {
       return response;
+    }
+
+    if (normalizedBrand) {
+      setBrands((currentBrands) => addBrandToCatalog(currentBrands, normalizedBrand));
     }
 
     await loadInventory({ keepScreen: true });
@@ -137,6 +153,32 @@ export function useProdutos() {
     return response;
   }
 
+  async function renameBrand(currentBrand, nextBrand) {
+    const response = await renameProdutoBrand(currentBrand, nextBrand);
+
+    if (!response.success) {
+      return response;
+    }
+
+    setBrands((currentBrands) => renameBrandInCatalog(currentBrands, currentBrand, nextBrand));
+    await loadInventory({ keepScreen: true });
+    return response;
+  }
+
+  async function replaceBrand(currentBrand, replacementBrand) {
+    const response = await replaceProdutoBrand(currentBrand, replacementBrand);
+
+    if (!response.success) {
+      return response;
+    }
+
+    setBrands((currentBrands) =>
+      replaceBrandInCatalog(currentBrands, currentBrand, replacementBrand)
+    );
+    await loadInventory({ keepScreen: true });
+    return response;
+  }
+
   async function saveUnit(unit) {
     const response = await createUnidade(unit);
 
@@ -150,28 +192,6 @@ export function useProdutos() {
 
   async function changeUnitStatus(unitId, status) {
     const response = await updateUnidadeStatus(unitId, status);
-
-    if (!response.success) {
-      return response;
-    }
-
-    await loadInventory({ keepScreen: true });
-    return response;
-  }
-
-  async function renameBrand(currentBrand, nextBrand) {
-    const response = await renameProdutoBrand(currentBrand, nextBrand);
-
-    if (!response.success) {
-      return response;
-    }
-
-    await loadInventory({ keepScreen: true });
-    return response;
-  }
-
-  async function replaceBrand(currentBrand, replacementBrand) {
-    const response = await replaceProdutoBrand(currentBrand, replacementBrand);
 
     if (!response.success) {
       return response;
@@ -302,6 +322,7 @@ export function useProdutos() {
 
   return {
     products,
+    brands,
     unitsByProduct,
     summary,
     error,

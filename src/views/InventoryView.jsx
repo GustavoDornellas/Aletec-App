@@ -13,6 +13,7 @@ import { ProductModal } from '@/components/ProductModal';
 import { UnitModal } from '@/components/UnitModal';
 
 export function InventoryView({
+  brands = [],
   products = [],
   unitsByProduct = {},
   inventoryError = '',
@@ -44,12 +45,6 @@ export function InventoryView({
   const [savingUnitQuantityId, setSavingUnitQuantityId] = useState(null);
   const [updatingUnitId, setUpdatingUnitId] = useState(null);
   const deferredSearchTerm = useDeferredValue(searchTerm);
-
-  const existingBrands = useMemo(() => {
-    return [...new Set(products.map((product) => product.brand || product.name).filter(Boolean))].sort((firstBrand, secondBrand) =>
-      firstBrand.localeCompare(secondBrand, 'pt-BR')
-    );
-  }, [products]);
 
   useEffect(() => {
     if (!feedback) {
@@ -294,7 +289,7 @@ export function InventoryView({
       />
 
       <ProductModal
-        existingBrands={existingBrands}
+        existingBrands={brands}
         isOpen={isProductModalOpen}
         product={selectedProduct}
         onRenameBrand={onRenameBrand}

@@ -69,6 +69,7 @@ export function HomePageContent() {
           ) : (
             <InventoryView
               products={inventory.products}
+              brands={inventory.brands}
               unitsByProduct={inventory.unitsByProduct}
               inventoryError={inventory.error}
               refreshing={inventory.refreshing}
