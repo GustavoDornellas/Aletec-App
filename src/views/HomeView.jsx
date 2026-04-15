@@ -80,10 +80,6 @@ export function HomePageContent() {
               onRemoveUnit={inventory.removeUnit}
               onSaveProduct={inventory.saveProduct}
               onSaveUnit={inventory.saveUnit}
-              onUpdateUnitBox={inventory.changeUnitBox}
-              onUpdateUnitQuantity={inventory.changeUnitQuantity}
-              onUpdateUnitSerial={inventory.changeUnitSerial}
-              onUpdateUnitStatus={inventory.changeUnitStatus}
             />
           )}
         </div>

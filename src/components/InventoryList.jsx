@@ -1,14 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, ChevronDown, Edit, Package, Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, Edit, Package, Plus, Trash2 } from 'lucide-react';
 import {
   getUnitStatusLabel,
   normalizeUnitStatus,
   UNIT_STATUS_AVAILABLE,
-  UNIT_STATUS_OPTIONS,
   UNIT_STATUS_USED,
 } from '@/utils/produtoConstants';
 
@@ -34,22 +32,10 @@ export function InventoryList({
   onDeleteProduct,
   onDeleteUnit,
   onEditProduct,
+  onEditUnit,
   onPreviewImage,
   onToggleExpanded,
-  onUpdateUnitBox,
-  onUpdateUnitQuantity,
-  onUpdateUnitSerial,
-  onUpdateUnitStatus,
-  savingUnitSerialId,
-  savingUnitQuantityId,
-  savingUnitBoxId,
-  updatingUnitId,
 }) {
-  const [editingSerialId, setEditingSerialId] = useState(null);
-  const [serialDrafts, setSerialDrafts] = useState({});
-  const [quantityDrafts, setQuantityDrafts] = useState({});
-  const [boxDrafts, setBoxDrafts] = useState({});
-
   return (
     <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm dark:border-[#45413c] dark:bg-[#34322f]">
       <div className="hidden grid-cols-12 gap-4 border-b border-slate-100 bg-slate-50 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant dark:border-[#45413c] dark:bg-[#2b2927] dark:text-blue-300/90 md:grid">
@@ -301,21 +287,6 @@ export function InventoryList({
                       </div>
 
                       {visibleUnits.map((unit) => {
-                        const serialDraft = serialDrafts[unit.id] ?? unit.sn;
-                        const quantityDraft = quantityDrafts[unit.id] ?? String(unit.quantity || 1);
-                        const boxDraft = boxDrafts[unit.id] ?? unit.box ?? '';
-                        const normalizedSerialDraft = serialDraft.trim();
-                        const parsedQuantityDraft = Number.parseInt(quantityDraft, 10);
-                        const hasInvalidQuantityDraft =
-                          !Number.isFinite(parsedQuantityDraft) || parsedQuantityDraft < 1;
-                        const hasUnchangedQuantity = String(unit.quantity || 1) === quantityDraft.trim();
-                        const hasInvalidSerialDraft = !normalizedSerialDraft;
-                        const hasUnchangedSerial = unit.sn === normalizedSerialDraft;
-                        const normalizedUnitBox = String(unit.box ?? '').trim();
-                        const normalizedBoxDraft = boxDraft.trim();
-                        const hasInvalidBoxDraft = normalizedBoxDraft.length > 60;
-                        const hasUnchangedBox = normalizedUnitBox === normalizedBoxDraft;
-
                         return (
                           <div
                             key={unit.id}
@@ -339,61 +310,9 @@ export function InventoryList({
                                   </div>
                                 ) : null}
 
-                                {editingSerialId === unit.id ? (
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="text"
-                                      value={serialDraft}
-                                      onChange={(event) =>
-                                        setSerialDrafts((current) => ({
-                                          ...current,
-                                          [unit.id]: event.target.value,
-                                        }))
-                                      }
-                                      disabled={savingUnitSerialId === unit.id}
-                                      className="w-36 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-900 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={async () => {
-                                        const response = await onUpdateUnitSerial(unit.id, serialDraft);
-
-                                        if (response?.success) {
-                                          setEditingSerialId(null);
-                                        }
-                                      }}
-                                      disabled={
-                                        savingUnitSerialId === unit.id ||
-                                        hasInvalidSerialDraft ||
-                                        hasUnchangedSerial
-                                      }
-                                      className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[10px] font-bold text-on-primary transition-all hover:bg-primary-dim disabled:cursor-not-allowed disabled:opacity-60"
-                                    >
-                                      <Check size={12} />
-                                      Salvar
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-on-surface dark:text-blue-200">
-                                      {unit.sn}
-                                    </span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setSerialDrafts((current) => ({
-                                          ...current,
-                                          [unit.id]: unit.sn,
-                                        }));
-                                        setEditingSerialId(unit.id);
-                                      }}
-                                      className="rounded-md p-1 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-zinc-400 dark:hover:bg-[#2f2c29]"
-                                      aria-label={`Editar codigo da placa ${unit.sn}`}
-                                    >
-                                      <Edit size={14} />
-                                    </button>
-                                  </div>
-                                )}
+                                <span className="text-xs font-bold text-on-surface dark:text-blue-200">
+                                  {unit.sn}
+                                </span>
 
                                 <span
                                   className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${getStatusBadgeClass(
@@ -406,84 +325,21 @@ export function InventoryList({
                               </div>
 
                               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                                <div className="flex items-center gap-2">
-                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
-                                    Caixa
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={boxDraft}
-                                    maxLength={60}
-                                    onChange={(event) =>
-                                      setBoxDrafts((current) => ({
-                                        ...current,
-                                        [unit.id]: event.target.value,
-                                      }))
-                                    }
-                                    disabled={savingUnitBoxId === unit.id}
-                                    placeholder="Sem caixa"
-                                    className="w-32 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-900 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => onUpdateUnitBox(unit.id, boxDraft)}
-                                    disabled={
-                                      savingUnitBoxId === unit.id ||
-                                      hasInvalidBoxDraft ||
-                                      hasUnchangedBox
-                                    }
-                                    className="inline-flex items-center gap-1 rounded-md border border-slate-200 px-2 py-1 text-[10px] font-bold text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#2f2c29]"
-                                  >
-                                    <Check size={12} />
-                                    Salvar
-                                  </button>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
-                                    Quantidade
-                                  </label>
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    value={quantityDraft}
-                                    onChange={(event) =>
-                                      setQuantityDrafts((current) => ({
-                                        ...current,
-                                        [unit.id]: event.target.value,
-                                      }))
-                                    }
-                                    disabled={savingUnitQuantityId === unit.id}
-                                    className="w-20 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-900 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => onUpdateUnitQuantity(unit.id, quantityDraft)}
-                                    disabled={
-                                      savingUnitQuantityId === unit.id ||
-                                      hasInvalidQuantityDraft ||
-                                      hasUnchangedQuantity
-                                    }
-                                    className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[10px] font-bold text-on-primary transition-all hover:bg-primary-dim disabled:cursor-not-allowed disabled:opacity-60"
-                                  >
-                                    <Check size={12} />
-                                    Salvar
-                                  </button>
-                                </div>
-
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                                  Caixa: {unit.box || 'Sem caixa'}
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                                  Quantidade: {unit.quantity || 1}
+                                </span>
                                 <div className="flex w-full justify-end gap-2 sm:w-auto">
-                                  <select
-                                    value={normalizeUnitStatus(unit.status)}
-                                    onChange={(event) => onUpdateUnitStatus(unit.id, event.target.value)}
-                                    disabled={updatingUnitId === unit.id}
-                                    className="flex-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-800 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#2f2c29] dark:text-blue-100 sm:flex-none"
+                                  <button
+                                    type="button"
+                                    onClick={() => onEditUnit(unit, product)}
+                                    className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-zinc-400 dark:hover:bg-[#2f2c29]"
+                                    aria-label={`Editar unidade ${unit.sn}`}
                                   >
-                                    {UNIT_STATUS_OPTIONS.map((statusOption) => (
-                                      <option key={statusOption} value={statusOption}>
-                                        {getUnitStatusLabel(statusOption)}
-                                      </option>
-                                    ))}
-                                  </select>
+                                    <Edit size={14} />
+                                  </button>
 
                                   <button
                                     type="button"

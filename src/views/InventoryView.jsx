@@ -30,10 +30,6 @@ export function InventoryView({
   onRemoveUnit = async () => ({ success: false, error: { message: 'Remocao indisponivel.' } }),
   onSaveProduct = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
   onSaveUnit = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
-  onUpdateUnitBox = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
-  onUpdateUnitQuantity = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
-  onUpdateUnitSerial = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
-  onUpdateUnitStatus = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
 }) {
   const importInputRef = useRef(null);
   const [expandedId, setExpandedId] = useState(null);
@@ -43,16 +39,13 @@ export function InventoryView({
   const [categoryFilter, setCategoryFilter] = useState('Todas');
   const [statusFilter, setStatusFilter] = useState(UNIT_STATUS_ALL);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedUnit, setSelectedUnit] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isUnitModalOpen, setIsUnitModalOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deletingProductId, setDeletingProductId] = useState(null);
   const [deletingUnitId, setDeletingUnitId] = useState(null);
-  const [savingUnitSerialId, setSavingUnitSerialId] = useState(null);
-  const [savingUnitBoxId, setSavingUnitBoxId] = useState(null);
-  const [savingUnitQuantityId, setSavingUnitQuantityId] = useState(null);
-  const [updatingUnitId, setUpdatingUnitId] = useState(null);
   const deferredSearchTerm = useDeferredValue(searchTerm);
 
   useEffect(() => {
@@ -202,87 +195,6 @@ export function InventoryView({
     setDeletingUnitId(null);
   }
 
-  async function handleUpdateUnitStatus(unitId, nextStatus) {
-    setUpdatingUnitId(unitId);
-    const response = await onUpdateUnitStatus(unitId, nextStatus);
-
-    if (!response.success) {
-      showFeedback({
-        type: 'error',
-        message: response.error.message,
-      });
-      setUpdatingUnitId(null);
-      return;
-    }
-
-    showFeedback({
-      type: 'success',
-      message: response.message,
-    });
-    setUpdatingUnitId(null);
-  }
-
-  async function handleUpdateUnitQuantity(unitId, quantity) {
-    setSavingUnitQuantityId(unitId);
-    const response = await onUpdateUnitQuantity(unitId, quantity);
-
-    if (!response.success) {
-      showFeedback({
-        type: 'error',
-        message: response.error.message,
-      });
-      setSavingUnitQuantityId(null);
-      return;
-    }
-
-    showFeedback({
-      type: 'success',
-      message: response.message,
-    });
-    setSavingUnitQuantityId(null);
-  }
-
-  async function handleUpdateUnitBox(unitId, box) {
-    setSavingUnitBoxId(unitId);
-    const response = await onUpdateUnitBox(unitId, box);
-
-    if (!response.success) {
-      showFeedback({
-        type: 'error',
-        message: response.error.message,
-      });
-      setSavingUnitBoxId(null);
-      return;
-    }
-
-    showFeedback({
-      type: 'success',
-      message: response.message,
-    });
-    setSavingUnitBoxId(null);
-  }
-
-  async function handleUpdateUnitSerial(unitId, serial) {
-    setSavingUnitSerialId(unitId);
-    const response = await onUpdateUnitSerial(unitId, serial);
-
-    if (!response.success) {
-      showFeedback({
-        type: 'error',
-        message: response.error.message,
-      });
-      setSavingUnitSerialId(null);
-      return response;
-    }
-
-    showFeedback({
-      type: 'success',
-      message: response.message,
-    });
-    setSavingUnitSerialId(null);
-    return response;
-  }
-
   return (
     <div className="space-y-6 p-4 md:p-8">
       <FeedbackAlert
@@ -372,14 +284,11 @@ export function InventoryView({
         expandedId={expandedId}
         deletingProductId={deletingProductId}
         deletingUnitId={deletingUnitId}
-        savingUnitSerialId={savingUnitSerialId}
-        updatingUnitId={updatingUnitId}
-        savingUnitBoxId={savingUnitBoxId}
-        savingUnitQuantityId={savingUnitQuantityId}
         filteredProducts={filteredProducts}
         getVisibleUnits={getVisibleUnits}
         onAddUnit={(product) => {
           setSelectedProduct(product);
+          setSelectedUnit(null);
           setIsUnitModalOpen(true);
         }}
         onDeleteProduct={setDeleteConfirmId}
@@ -388,14 +297,15 @@ export function InventoryView({
           setSelectedProduct(product);
           setIsProductModalOpen(true);
         }}
+        onEditUnit={(unit, product) => {
+          setSelectedProduct(product);
+          setSelectedUnit(unit);
+          setIsUnitModalOpen(true);
+        }}
         onPreviewImage={setPreviewImage}
         onToggleExpanded={(productId) =>
           setExpandedId((currentId) => (currentId === productId ? null : productId))
         }
-        onUpdateUnitBox={handleUpdateUnitBox}
-        onUpdateUnitQuantity={handleUpdateUnitQuantity}
-        onUpdateUnitSerial={handleUpdateUnitSerial}
-        onUpdateUnitStatus={handleUpdateUnitStatus}
       />
 
       <ProductModal
@@ -413,9 +323,14 @@ export function InventoryView({
       />
 
       <UnitModal
+        key={selectedUnit?.id || selectedProduct?.id || 'new-unit'}
         isOpen={isUnitModalOpen}
         productId={selectedProduct?.id}
-        onClose={() => setIsUnitModalOpen(false)}
+        unit={selectedUnit}
+        onClose={() => {
+          setIsUnitModalOpen(false);
+          setSelectedUnit(null);
+        }}
         onSave={onSaveUnit}
         onFeedback={showFeedback}
       />

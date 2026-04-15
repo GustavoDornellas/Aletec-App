@@ -11,14 +11,19 @@ import {
   UNIT_STATUS_OPTIONS,
 } from '@/utils/produtoConstants';
 
-export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
-  const [formData, setFormData] = useState({
-    sn: '',
-    box: '',
-    status: UNIT_STATUS_AVAILABLE,
-    quantity: 1,
-    image: '',
-  });
+function createInitialFormData(unit) {
+  return {
+    id: unit?.id || '',
+    sn: unit?.sn || '',
+    box: unit?.box || '',
+    status: unit?.status || UNIT_STATUS_AVAILABLE,
+    quantity: unit?.quantity || 1,
+    image: unit?.image || '',
+  };
+}
+
+export function UnitModal({ isOpen, productId, unit, onClose, onSave, onFeedback }) {
+  const [formData, setFormData] = useState(() => createInitialFormData(unit));
   const [imageName, setImageName] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,13 +92,7 @@ export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
       type: 'success',
       message: response.message,
     });
-    setFormData({
-      sn: '',
-      box: '',
-      status: UNIT_STATUS_AVAILABLE,
-      quantity: 1,
-      image: '',
-    });
+    setFormData(createInitialFormData(null));
     setImageName('');
     setIsSubmitting(false);
     onClose();
@@ -110,7 +109,9 @@ export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
             className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:border dark:border-[#45413c] dark:bg-[#34322f]"
           >
             <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-[#45413c] dark:bg-[#2b2927]">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-blue-50">Cadastrar Unidade</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-blue-50">
+                {unit?.id ? 'Editar Unidade' : 'Cadastrar Unidade'}
+              </h3>
               <button
                 type="button"
                 onClick={onClose}
@@ -245,7 +246,7 @@ export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
                   className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : null}
-                  Cadastrar Unidade
+                  {unit?.id ? 'Salvar Alteracoes' : 'Cadastrar Unidade'}
                 </button>
               </div>
             </form>

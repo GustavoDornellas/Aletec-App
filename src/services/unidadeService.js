@@ -188,6 +188,36 @@ export async function createUnidade(unidade) {
   }
 }
 
+export async function updateUnidade(unitId, unidade) {
+  const validation = validateUnidade(unidade);
+
+  if (!validation.isValid) {
+    return createErrorResponse('Revise os dados da unidade antes de salvar.', {
+      code: 'validation_error',
+      fields: validation.errors,
+    });
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const payload = buildUnidadePayload(unidade);
+    const { data, error } = await supabase
+      .from('units')
+      .update(payload)
+      .eq('id', unitId)
+      .select('*')
+      .single();
+
+    if (error) {
+      return mapSupabaseError(error, 'Nao foi possivel atualizar a unidade.');
+    }
+
+    return createSuccessResponse(mapUnidade(data), 'Unidade atualizada com sucesso.');
+  } catch (error) {
+    return mapSupabaseError(error, 'Nao foi possivel atualizar a unidade.');
+  }
+}
+
 export async function updateUnidadeStatus(unitId, status) {
   try {
     const supabase = getSupabaseClient();

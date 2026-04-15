@@ -19,6 +19,7 @@ import {
   createUnidade,
   deleteUnidade,
   listUnidades,
+  updateUnidade,
   updateUnidadeBox,
   updateUnidadeQuantity,
   updateUnidadeSerial,
@@ -182,7 +183,9 @@ export function useProdutos() {
   }
 
   async function saveUnit(unit) {
-    const response = await createUnidade(unit);
+    const response = unit.id
+      ? await updateUnidade(unit.id, unit)
+      : await createUnidade(unit);
 
     if (!response.success) {
       return response;
