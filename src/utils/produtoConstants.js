@@ -16,8 +16,8 @@ export const UNIT_STATUS_USED = 'Utilizada';
 export const UNIT_STATUS_SOLD = 'Vendida';
 export const UNIT_STATUS_ALL = 'Todas';
 
-// Legacy value expected by current database constraint/triggers.
-const DB_LEGACY_UNIT_STATUS_AVAILABLE = 'DisponÃ­vel pra venda';
+// Legacy value expected by the current database check constraint and triggers.
+const DB_LEGACY_UNIT_STATUS_AVAILABLE = 'Dispon' + '\u00c3\u00ad' + 'vel pra venda';
 
 export const UNIT_STATUS_OPTIONS = [
   UNIT_STATUS_AVAILABLE,
@@ -28,11 +28,9 @@ export const UNIT_STATUS_OPTIONS = [
 const AVAILABLE_STATUS_VALUES = new Set([
   UNIT_STATUS_AVAILABLE,
   'Disponivel pra venda',
-  'Disponível pra venda',
+  'Dispon' + '\u00c3\u00ad' + 'vel pra venda',
   'Disponivel para venda',
-  'Disponível para venda',
-  DB_LEGACY_UNIT_STATUS_AVAILABLE,
-  'DisponÃ­vel para venda',
+  'Dispon' + '\u00c3\u00ad' + 'vel para venda',
 ]);
 
 export function normalizeUnitStatus(status) {
