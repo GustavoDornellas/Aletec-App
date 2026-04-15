@@ -1,4 +1,8 @@
-import { normalizeUnitStatus, UNIT_STATUS_AVAILABLE } from '@/utils/produtoConstants';
+import {
+  getUnitStatusLabel,
+  normalizeUnitStatus,
+  UNIT_STATUS_AVAILABLE,
+} from '@/utils/produtoConstants';
 
 export const CSV_FIELDS = [
   { key: 'nome', label: 'Marca', aliases: ['marca', 'nome', 'nome_do_produto', 'produto'] },
@@ -179,7 +183,7 @@ export function buildInventoryCsv(products, unitsByProduct) {
           product.price.toFixed(2),
           product.status,
           unit.sn,
-          normalizeUnitStatus(unit.status),
+          getUnitStatusLabel(unit.status),
           unit.quantity,
         ]);
     });

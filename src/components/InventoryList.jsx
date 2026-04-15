@@ -5,9 +5,10 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, ChevronDown, Edit, Package, Plus, Trash2 } from 'lucide-react';
 import {
+  getUnitStatusLabel,
   normalizeUnitStatus,
   UNIT_STATUS_AVAILABLE,
-  UNIT_STATUS_SOLD,
+  UNIT_STATUS_OPTIONS,
   UNIT_STATUS_USED,
 } from '@/utils/produtoConstants';
 
@@ -325,7 +326,7 @@ export function InventoryList({
                                     unit.status
                                   )}`}
                                 >
-                                  {normalizeUnitStatus(unit.status)}
+                                  {getUnitStatusLabel(unit.status)}
                                   {unit.quantity > 1 ? ` (x${unit.quantity})` : ''}
                                 </span>
                               </div>
@@ -370,9 +371,11 @@ export function InventoryList({
                                     disabled={updatingUnitId === unit.id}
                                     className="flex-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-800 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#2f2c29] dark:text-blue-100 sm:flex-none"
                                   >
-                                    <option>{UNIT_STATUS_AVAILABLE}</option>
-                                    <option>{UNIT_STATUS_SOLD}</option>
-                                    <option>{UNIT_STATUS_USED}</option>
+                                    {UNIT_STATUS_OPTIONS.map((statusOption) => (
+                                      <option key={statusOption} value={statusOption}>
+                                        {getUnitStatusLabel(statusOption)}
+                                      </option>
+                                    ))}
                                   </select>
 
                                   <button

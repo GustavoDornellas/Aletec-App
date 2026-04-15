@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Loader2, X } from 'lucide-react';
 import { resizeImage } from '@/utils/image';
 import {
+  getUnitStatusLabel,
   UNIT_STATUS_AVAILABLE,
   UNIT_STATUS_OPTIONS,
 } from '@/utils/produtoConstants';
@@ -145,9 +146,14 @@ export function UnitModal({ isOpen, productId, onClose, onSave, onFeedback }) {
                   className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
                 >
                   {UNIT_STATUS_OPTIONS.map((status) => (
-                    <option key={status}>{status}</option>
+                    <option key={status} value={status}>
+                      {getUnitStatusLabel(status)}
+                    </option>
                   ))}
                 </select>
+                {fieldErrors.status ? (
+                  <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.status}</p>
+                ) : null}
               </div>
 
               <div>

@@ -1,8 +1,13 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { Banknote, Boxes, Package, ShoppingCart } from 'lucide-react';
 import { buildInventoryCsv, parseCsvContent } from '@/utils/csv';
-import { filterProducts, filterUnitsByStatus } from '@/utils/inventory';
+import {
+  createInventorySummary,
+  filterProducts,
+  filterUnitsByStatus,
+} from '@/utils/inventory';
 import { UNIT_STATUS_ALL } from '@/utils/produtoConstants';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { FeedbackAlert } from '@/components/FeedbackAlert';
@@ -67,6 +72,8 @@ export function InventoryView({
       status: statusFilter,
     });
   }, [categoryFilter, deferredSearchTerm, products, statusFilter, unitsByProduct]);
+
+  const inventorySummary = useMemo(() => createInventorySummary(products), [products]);
 
   function showFeedback(nextFeedback) {
     setFeedback(nextFeedback);
@@ -236,6 +243,60 @@ export function InventoryView({
       <FeedbackAlert
         feedback={feedback || (inventoryError ? { type: 'error', message: inventoryError } : null)}
       />
+
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {[
+          {
+            label: 'Total de unidades',
+            value: inventorySummary.totalUnits.toLocaleString('pt-BR'),
+            sub: `${inventorySummary.totalProducts} modelos cadastrados`,
+            icon: Boxes,
+          },
+          {
+            label: 'Disponiveis',
+            value: inventorySummary.availableUnits.toLocaleString('pt-BR'),
+            sub: 'Prontas para venda',
+            icon: Package,
+          },
+          {
+            label: 'Vendidas',
+            value: inventorySummary.soldUnits.toLocaleString('pt-BR'),
+            sub: 'Saida registrada',
+            icon: ShoppingCart,
+          },
+          {
+            label: 'Valor em estoque',
+            value: `R$ ${inventorySummary.inventoryValue.toLocaleString('pt-BR', {
+              minimumFractionDigits: 2,
+            })}`,
+            sub: 'Baseado nas unidades disponiveis',
+            icon: Banknote,
+          },
+        ].map((card) => (
+          <div
+            key={card.label}
+            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-[#45413c] dark:bg-[#34322f]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:text-blue-200/80">
+                  {card.label}
+                </p>
+                <p className="mt-2 text-xl font-black tracking-tight text-slate-900 dark:text-blue-50 md:text-2xl">
+                  {card.value}
+                </p>
+                <p className="mt-1 text-xs font-medium text-slate-500 dark:text-blue-200/70">
+                  {card.sub}
+                </p>
+              </div>
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <card.icon size={18} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <InventoryFilters
         category={categoryFilter}

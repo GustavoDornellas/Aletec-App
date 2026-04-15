@@ -1,4 +1,5 @@
 import {
+  getUnitStatusLabel,
   normalizeUnitStatus,
   PRODUCT_CATEGORIES,
   UNIT_STATUS_ALL,
@@ -113,4 +114,12 @@ export function filterUnitsByStatus(unitsByProduct, productId, status) {
   }
 
   return productUnits.filter((unit) => normalizeUnitStatus(unit.status) === status);
+}
+
+export function getInventoryStatusLabel(status) {
+  if (status === UNIT_STATUS_ALL) {
+    return 'Todos Status';
+  }
+
+  return getUnitStatusLabel(status);
 }

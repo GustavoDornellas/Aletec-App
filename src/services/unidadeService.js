@@ -1,7 +1,11 @@
 'use client';
 
 import { getSupabaseClient, mapSupabaseError } from '@/services/supabaseClient';
-import { normalizeUnitStatus, toDatabaseUnitStatus } from '@/utils/produtoConstants';
+import {
+  getLegacyDatabaseUnitStatus,
+  normalizeUnitStatus,
+  toDatabaseUnitStatus,
+} from '@/utils/produtoConstants';
 import { createErrorResponse, createSuccessResponse } from '@/utils/serviceResponse';
 import { validateUnidade } from '@/utils/validateUnidade';
 
@@ -43,6 +47,53 @@ function validateUnitQuantity(quantity) {
   return null;
 }
 
+function isUnitStatusConstraintError(error) {
+  return String(error?.message ?? '').toLowerCase().includes('check constraint');
+}
+
+async function insertUnidadeWithStatusFallback(supabase, payload) {
+  const { data, error } = await supabase.from('units').insert(payload).select('*').single();
+
+  if (!error) {
+    return { data, error: null };
+  }
+
+  if (!isUnitStatusConstraintError(error)) {
+    return { data: null, error };
+  }
+
+  return supabase
+    .from('units')
+    .insert({ ...payload, status: getLegacyDatabaseUnitStatus(payload.status) })
+    .select('*')
+    .single();
+}
+
+async function updateUnidadeStatusWithFallback(supabase, unitId, status) {
+  const normalizedStatus = toDatabaseUnitStatus(status);
+  const { data, error } = await supabase
+    .from('units')
+    .update({ status: normalizedStatus })
+    .eq('id', unitId)
+    .select('*')
+    .single();
+
+  if (!error) {
+    return { data, error: null };
+  }
+
+  if (!isUnitStatusConstraintError(error)) {
+    return { data: null, error };
+  }
+
+  return supabase
+    .from('units')
+    .update({ status: getLegacyDatabaseUnitStatus(normalizedStatus) })
+    .eq('id', unitId)
+    .select('*')
+    .single();
+}
+
 export async function listUnidades() {
   try {
     const supabase = getSupabaseClient();
@@ -74,7 +125,7 @@ export async function createUnidade(unidade) {
   try {
     const supabase = getSupabaseClient();
     const payload = buildUnidadePayload(unidade);
-    const { data, error } = await supabase.from('units').insert(payload).select('*').single();
+    const { data, error } = await insertUnidadeWithStatusFallback(supabase, payload);
 
     if (error) {
       return mapSupabaseError(error, 'Nao foi possivel cadastrar a unidade.');
@@ -89,12 +140,7 @@ export async function createUnidade(unidade) {
 export async function updateUnidadeStatus(unitId, status) {
   try {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from('units')
-      .update({ status: toDatabaseUnitStatus(status) })
-      .eq('id', unitId)
-      .select('*')
-      .single();
+    const { data, error } = await updateUnidadeStatusWithFallback(supabase, unitId, status);
 
     if (error) {
       return mapSupabaseError(error, 'Nao foi possivel atualizar o status da unidade.');

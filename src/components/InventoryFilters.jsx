@@ -2,6 +2,7 @@
 
 import { Download, Filter, Plus, Search, Upload } from 'lucide-react';
 import {
+  getUnitStatusLabel,
   PRODUCT_CATEGORIES,
   UNIT_STATUS_ALL,
   UNIT_STATUS_OPTIONS,
@@ -22,7 +23,7 @@ export function InventoryFilters({
 }) {
   return (
     <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-[#45413c] dark:bg-[#34322f]">
-      <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+      <div className="flex flex-col justify-between gap-3 xl:flex-row xl:items-center">
         <div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-blue-50">
             Gerenciamento de Estoque
@@ -32,12 +33,12 @@ export function InventoryFilters({
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <button
             type="button"
             onClick={onExportCsv}
             disabled={refreshing}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4b4741] dark:text-blue-100 dark:hover:bg-[#2b2927]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto dark:border-[#4b4741] dark:text-blue-100 dark:hover:bg-[#2b2927]"
           >
             <Download size={16} />
             Exportar CSV
@@ -47,7 +48,7 @@ export function InventoryFilters({
             type="button"
             onClick={onImportCsv}
             disabled={importing}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4b4741] dark:text-blue-100 dark:hover:bg-[#2b2927]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto dark:border-[#4b4741] dark:text-blue-100 dark:hover:bg-[#2b2927]"
           >
             <Upload size={16} />
             {importing ? 'Importando...' : 'Importar CSV'}
@@ -56,7 +57,7 @@ export function InventoryFilters({
           <button
             type="button"
             onClick={onCreateProduct}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary-dim"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-on-primary shadow-lg shadow-primary/20 transition-all hover:bg-primary-dim sm:w-auto"
           >
             <Plus size={16} />
             Novo Produto
@@ -64,7 +65,7 @@ export function InventoryFilters({
         </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_220px]">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_220px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-blue-300/75" size={14} />
           <input
@@ -76,7 +77,7 @@ export function InventoryFilters({
           />
         </div>
 
-        <div className="relative">
+        <div className="relative sm:col-span-1 xl:col-span-1">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-blue-300/75" size={14} />
           <select
             value={category}
@@ -92,7 +93,7 @@ export function InventoryFilters({
           </select>
         </div>
 
-        <div className="relative">
+        <div className="relative sm:col-span-2 xl:col-span-1">
           <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-blue-300/75" size={14} />
           <select
             value={status}
@@ -102,7 +103,7 @@ export function InventoryFilters({
             <option value={UNIT_STATUS_ALL}>Todos Status</option>
             {UNIT_STATUS_OPTIONS.map((statusOption) => (
               <option key={statusOption} value={statusOption}>
-                {statusOption}
+                {getUnitStatusLabel(statusOption)}
               </option>
             ))}
           </select>
