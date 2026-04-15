@@ -48,7 +48,17 @@ function validateUnitQuantity(quantity) {
 }
 
 function isUnitStatusConstraintError(error) {
-  return String(error?.message ?? '').toLowerCase().includes('check constraint');
+  const message = String(error?.message ?? '').toLowerCase();
+  const details = String(error?.details ?? '').toLowerCase();
+  const hint = String(error?.hint ?? '').toLowerCase();
+  const code = String(error?.code ?? '').toLowerCase();
+
+  return (
+    code === '23514' ||
+    message.includes('check constraint') ||
+    details.includes('check constraint') ||
+    hint.includes('check constraint')
+  );
 }
 
 async function insertUnidadeWithStatusFallback(supabase, payload) {
@@ -62,11 +72,23 @@ async function insertUnidadeWithStatusFallback(supabase, payload) {
     return { data: null, error };
   }
 
-  return supabase
-    .from('units')
-    .insert({ ...payload, status: getLegacyDatabaseUnitStatus(payload.status) })
-    .select('*')
-    .single();
+  let lastError = error;
+
+  for (const statusCandidate of getLegacyDatabaseUnitStatus(payload.status)) {
+    const response = await supabase
+      .from('units')
+      .insert({ ...payload, status: statusCandidate })
+      .select('*')
+      .single();
+
+    if (!response.error) {
+      return response;
+    }
+
+    lastError = response.error;
+  }
+
+  return { data: null, error: lastError };
 }
 
 async function updateUnidadeStatusWithFallback(supabase, unitId, status) {
@@ -86,12 +108,24 @@ async function updateUnidadeStatusWithFallback(supabase, unitId, status) {
     return { data: null, error };
   }
 
-  return supabase
-    .from('units')
-    .update({ status: getLegacyDatabaseUnitStatus(normalizedStatus) })
-    .eq('id', unitId)
-    .select('*')
-    .single();
+  let lastError = error;
+
+  for (const statusCandidate of getLegacyDatabaseUnitStatus(normalizedStatus)) {
+    const response = await supabase
+      .from('units')
+      .update({ status: statusCandidate })
+      .eq('id', unitId)
+      .select('*')
+      .single();
+
+    if (!response.error) {
+      return response;
+    }
+
+    lastError = response.error;
+  }
+
+  return { data: null, error: lastError };
 }
 
 export async function listUnidades() {

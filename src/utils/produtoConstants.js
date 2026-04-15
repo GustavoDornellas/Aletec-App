@@ -50,9 +50,15 @@ const UNIT_STATUS_VALUE_BY_KEY = new Map([
 ]);
 
 const LEGACY_DATABASE_STATUS_BY_VALUE = {
-  [UNIT_STATUS_AVAILABLE]: 'DisponÃ­vel pra venda',
-  [UNIT_STATUS_USED]: 'Utilizada',
-  [UNIT_STATUS_SOLD]: 'Vendida',
+  [UNIT_STATUS_AVAILABLE]: [
+    'Dispon\u00c3\u00advel pra venda',
+    'Dispon\u00edvel pra venda',
+    'Dispon\u00edvel para venda',
+    'Disponivel pra venda',
+    'Disponivel para venda',
+  ],
+  [UNIT_STATUS_USED]: ['Utilizada'],
+  [UNIT_STATUS_SOLD]: ['Vendida'],
 };
 
 function normalizeStatusKey(status) {
@@ -97,10 +103,13 @@ export function getUnitStatusLabel(status) {
 
 export function getLegacyDatabaseUnitStatus(status) {
   const normalizedStatus = normalizeUnitStatus(status);
-  return (
-    LEGACY_DATABASE_STATUS_BY_VALUE[normalizedStatus] ||
-    LEGACY_DATABASE_STATUS_BY_VALUE[UNIT_STATUS_AVAILABLE]
-  );
+
+  return [
+    ...new Set(
+      LEGACY_DATABASE_STATUS_BY_VALUE[normalizedStatus] ||
+        LEGACY_DATABASE_STATUS_BY_VALUE[UNIT_STATUS_AVAILABLE]
+    ),
+  ];
 }
 
 export function toDatabaseUnitStatus(status) {
