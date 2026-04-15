@@ -28,6 +28,21 @@ function buildUnidadePayload(unidade) {
   };
 }
 
+function validateUnitQuantity(quantity) {
+  const normalizedQuantity = Number.parseInt(String(quantity ?? ''), 10);
+
+  if (!Number.isFinite(normalizedQuantity) || normalizedQuantity < 1) {
+    return createErrorResponse('Informe uma quantidade valida maior ou igual a 1.', {
+      code: 'validation_error',
+      fields: {
+        quantity: 'A quantidade deve ser maior ou igual a 1.',
+      },
+    });
+  }
+
+  return null;
+}
+
 export async function listUnidades() {
   try {
     const supabase = getSupabaseClient();
@@ -88,6 +103,32 @@ export async function updateUnidadeStatus(unitId, status) {
     return createSuccessResponse(mapUnidade(data), 'Status atualizado com sucesso.');
   } catch (error) {
     return mapSupabaseError(error, 'Nao foi possivel atualizar o status da unidade.');
+  }
+}
+
+export async function updateUnidadeQuantity(unitId, quantity) {
+  const validationError = validateUnitQuantity(quantity);
+
+  if (validationError) {
+    return validationError;
+  }
+
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('units')
+      .update({ quantity: Number.parseInt(String(quantity), 10) })
+      .eq('id', unitId)
+      .select('*')
+      .single();
+
+    if (error) {
+      return mapSupabaseError(error, 'Nao foi possivel atualizar a quantidade da unidade.');
+    }
+
+    return createSuccessResponse(mapUnidade(data), 'Quantidade atualizada com sucesso.');
+  } catch (error) {
+    return mapSupabaseError(error, 'Nao foi possivel atualizar a quantidade da unidade.');
   }
 }
 

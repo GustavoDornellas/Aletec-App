@@ -71,7 +71,7 @@ export function InventoryFilters({
             type="text"
             value={searchTerm}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Buscar por nome ou PN"
+            placeholder="Buscar por marca ou PN"
             className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm outline-none focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-100"
           />
         </div>

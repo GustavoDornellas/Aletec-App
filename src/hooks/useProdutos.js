@@ -11,6 +11,7 @@ import {
   createUnidade,
   deleteUnidade,
   listUnidades,
+  updateUnidadeQuantity,
   updateUnidadeStatus,
 } from '@/services/unidadeService';
 import { buildUnitsByProduct, createInventorySummary, enrichProducts } from '@/utils/inventory';
@@ -156,6 +157,17 @@ export function useProdutos() {
     return response;
   }
 
+  async function changeUnitQuantity(unitId, quantity) {
+    const response = await updateUnidadeQuantity(unitId, quantity);
+
+    if (!response.success) {
+      return response;
+    }
+
+    await loadInventory({ keepScreen: true });
+    return response;
+  }
+
   async function removeUnit(unitId) {
     const response = await deleteUnidade(unitId);
 
@@ -192,7 +204,7 @@ export function useProdutos() {
         return {
           success: false,
           error: {
-            message: `Linha ${row.rowNumber}: informe ao menos nome e PN.`,
+            message: `Linha ${row.rowNumber}: informe ao menos marca e PN.`,
           },
         };
       }
@@ -276,6 +288,7 @@ export function useProdutos() {
     removeProduct,
     saveUnit,
     changeUnitStatus,
+    changeUnitQuantity,
     removeUnit,
     importRows,
   };

@@ -50,7 +50,6 @@ export function HomePageContent() {
         <TopBar
           title={activeView === 'dashboard' ? 'Dashboard' : 'Gerenciamento de Estoque'}
           onMenuClick={() => setIsSidebarOpen(true)}
-          showSectionLinks={activeView !== 'dashboard'}
         />
 
         <div className="flex-1 overflow-y-auto bg-surface dark:bg-zinc-900">
@@ -78,6 +77,7 @@ export function HomePageContent() {
               onRemoveUnit={inventory.removeUnit}
               onSaveProduct={inventory.saveProduct}
               onSaveUnit={inventory.saveUnit}
+              onUpdateUnitQuantity={inventory.changeUnitQuantity}
               onUpdateUnitStatus={inventory.changeUnitStatus}
             />
           )}

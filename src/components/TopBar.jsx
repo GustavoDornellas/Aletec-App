@@ -5,7 +5,7 @@ import { LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 import { useTheme } from '@/components/ThemeProvider';
 
-export function TopBar({ onMenuClick, showSectionLinks = true, title }) {
+export function TopBar({ onMenuClick, title }) {
   const { logout, user } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
@@ -29,17 +29,6 @@ export function TopBar({ onMenuClick, showSectionLinks = true, title }) {
       </div>
 
       <div className="ml-auto flex items-center gap-3 md:gap-6">
-        {showSectionLinks ? (
-          <>
-            <nav className="hidden items-center gap-8 lg:flex">
-              <a className="border-b-2 border-primary py-1 text-sm font-bold text-primary" href="#">
-                Visao Geral
-              </a>
-            </nav>
-            <div className="mx-2 hidden h-6 w-px bg-slate-200 dark:bg-zinc-800 lg:block" />
-          </>
-        ) : null}
-
         <div className="flex items-center gap-3">
           <button
             type="button"

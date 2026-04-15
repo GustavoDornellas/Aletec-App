@@ -8,6 +8,7 @@ import { validateProduto } from '@/utils/validateProduto';
 function mapProduto(row) {
   return {
     id: row.id,
+    brand: row.name,
     name: row.name,
     pn: row.pn,
     category: row.category,
@@ -20,8 +21,10 @@ function mapProduto(row) {
 }
 
 function buildProdutoPayload(produto) {
+  const brand = String(produto.brand ?? produto.name ?? produto.nome ?? produto.marca ?? '').trim();
+
   return {
-    name: String(produto.name ?? produto.nome ?? '').trim(),
+    name: brand,
     pn: String(produto.pn ?? '').trim(),
     category: String(produto.category ?? produto.categoria ?? 'Outros').trim() || 'Outros',
     price: Number(produto.price ?? produto.preco ?? 0),

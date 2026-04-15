@@ -22,6 +22,7 @@ export function InventoryView({
   onRemoveUnit = async () => ({ success: false, error: { message: 'Remocao indisponivel.' } }),
   onSaveProduct = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
   onSaveUnit = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
+  onUpdateUnitQuantity = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
   onUpdateUnitStatus = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
 }) {
   const importInputRef = useRef(null);
@@ -38,8 +39,15 @@ export function InventoryView({
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deletingProductId, setDeletingProductId] = useState(null);
   const [deletingUnitId, setDeletingUnitId] = useState(null);
+  const [savingUnitQuantityId, setSavingUnitQuantityId] = useState(null);
   const [updatingUnitId, setUpdatingUnitId] = useState(null);
   const deferredSearchTerm = useDeferredValue(searchTerm);
+
+  const existingBrands = useMemo(() => {
+    return [...new Set(products.map((product) => product.brand || product.name).filter(Boolean))].sort((firstBrand, secondBrand) =>
+      firstBrand.localeCompare(secondBrand, 'pt-BR')
+    );
+  }, [products]);
 
   useEffect(() => {
     if (!feedback) {
@@ -206,6 +214,26 @@ export function InventoryView({
     setUpdatingUnitId(null);
   }
 
+  async function handleUpdateUnitQuantity(unitId, quantity) {
+    setSavingUnitQuantityId(unitId);
+    const response = await onUpdateUnitQuantity(unitId, quantity);
+
+    if (!response.success) {
+      showFeedback({
+        type: 'error',
+        message: response.error.message,
+      });
+      setSavingUnitQuantityId(null);
+      return;
+    }
+
+    showFeedback({
+      type: 'success',
+      message: response.message,
+    });
+    setSavingUnitQuantityId(null);
+  }
+
   return (
     <div className="space-y-6 p-4 md:p-8">
       <FeedbackAlert
@@ -242,6 +270,7 @@ export function InventoryView({
         deletingProductId={deletingProductId}
         deletingUnitId={deletingUnitId}
         updatingUnitId={updatingUnitId}
+        savingUnitQuantityId={savingUnitQuantityId}
         filteredProducts={filteredProducts}
         getVisibleUnits={getVisibleUnits}
         onAddUnit={(product) => {
@@ -258,10 +287,12 @@ export function InventoryView({
         onToggleExpanded={(productId) =>
           setExpandedId((currentId) => (currentId === productId ? null : productId))
         }
+        onUpdateUnitQuantity={handleUpdateUnitQuantity}
         onUpdateUnitStatus={handleUpdateUnitStatus}
       />
 
       <ProductModal
+        existingBrands={existingBrands}
         isOpen={isProductModalOpen}
         product={selectedProduct}
         onClose={() => {

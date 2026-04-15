@@ -1,10 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
-import { PRODUCT_CATEGORIES } from '@/utils/produtoConstants';
+import { useMemo, useState } from 'react';
+import { Loader2, Plus } from 'lucide-react';
+import {
+  PRODUCT_BRAND_OPTIONS,
+  PRODUCT_CATEGORIES,
+} from '@/utils/produtoConstants';
 import { resizeImage } from '@/utils/image';
+
+const ADD_BRAND_OPTION = '__add-new-brand__';
 
 function buildInitialFormData(product) {
   if (!product) {
@@ -19,7 +24,7 @@ function buildInitialFormData(product) {
   }
 
   return {
-    name: product.name || '',
+    name: product.brand || product.name || '',
     pn: product.pn || '',
     category: product.category || PRODUCT_CATEGORIES[0],
     price: product.price?.toString() || '',
@@ -28,17 +33,15 @@ function buildInitialFormData(product) {
   };
 }
 
-const defaultFormData = {
-  name: '',
-  pn: '',
-  category: PRODUCT_CATEGORIES[0],
-  price: '',
-  status: 'Ativo',
-  image: '',
-};
+function buildBrandOptions(existingBrands = [], currentBrand = '') {
+  return [...new Set([...PRODUCT_BRAND_OPTIONS, ...existingBrands, currentBrand].filter(Boolean))].sort(
+    (firstBrand, secondBrand) => firstBrand.localeCompare(secondBrand, 'pt-BR')
+  );
+}
 
 export function ProductForm({
   product,
+  existingBrands = [],
   isSubmitting,
   fieldErrors = {},
   onCancel,
@@ -47,6 +50,13 @@ export function ProductForm({
 }) {
   const [formData, setFormData] = useState(() => buildInitialFormData(product));
   const [imageName, setImageName] = useState(() => (product?.image ? 'Imagem atual' : ''));
+  const [customBrand, setCustomBrand] = useState('');
+  const [customBrands, setCustomBrands] = useState([]);
+  const [isAddingBrand, setIsAddingBrand] = useState(false);
+
+  const brandOptions = useMemo(() => {
+    return buildBrandOptions([...existingBrands, ...customBrands], formData.name);
+  }, [customBrands, existingBrands, formData.name]);
 
   async function handleImageFileChange(event) {
     const file = event.target.files?.[0];
@@ -87,11 +97,53 @@ export function ProductForm({
     }
   }
 
+  function handleBrandChange(event) {
+    const nextValue = event.target.value;
+
+    if (nextValue === ADD_BRAND_OPTION) {
+      setIsAddingBrand(true);
+      return;
+    }
+
+    setIsAddingBrand(false);
+    setCustomBrand('');
+    setFormData((current) => ({ ...current, name: nextValue }));
+  }
+
+  function handleAddBrand() {
+    const normalizedBrand = customBrand.trim();
+
+    if (!normalizedBrand) {
+      onFeedback?.({
+        type: 'error',
+        message: 'Informe o nome da nova marca.',
+      });
+      return;
+    }
+
+    const hasBrand = brandOptions.some(
+      (brand) => brand.toLowerCase() === normalizedBrand.toLowerCase()
+    );
+
+    if (!hasBrand) {
+      setCustomBrands((current) => [...current, normalizedBrand]);
+    }
+
+    setFormData((current) => ({ ...current, name: normalizedBrand }));
+    setCustomBrand('');
+    setIsAddingBrand(false);
+    onFeedback?.({
+      type: 'success',
+      message: `Marca "${normalizedBrand}" adicionada a lista.`,
+    });
+  }
+
   function handleFormSubmit(event) {
     event.preventDefault();
 
     onSubmit({
       ...formData,
+      brand: formData.name,
       price: Number.parseFloat(String(formData.price).replace(',', '.')),
       image: formData.image || null,
     });
@@ -99,26 +151,61 @@ export function ProductForm({
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-4">
-      <div>
-        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500">
-          Nome do Produto
-        </label>
-        <input
-          required
-          type="text"
-          value={formData.name}
-          onChange={(event) => setFormData({ ...formData, name: event.target.value })}
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm transition-all focus:ring-2 focus:ring-primary/20"
-          placeholder="Ex: Placa de Controle Central V3"
-        />
-        {fieldErrors.nome ? (
-          <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.nome}</p>
+      <div className="space-y-3">
+        <div>
+          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+            Marca
+          </label>
+          <select
+            required
+            value={formData.name || ''}
+            onChange={handleBrandChange}
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+          >
+            <option value="" disabled>
+              Selecione a marca
+            </option>
+            {brandOptions.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+            <option value={ADD_BRAND_OPTION}>Adicionar nova marca</option>
+          </select>
+          {fieldErrors.nome ? (
+            <p className="mt-1 text-xs font-medium text-red-600">{fieldErrors.nome}</p>
+          ) : null}
+        </div>
+
+        {isAddingBrand ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-3 dark:border-[#4a4540] dark:bg-[#2b2927]">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+              Nova marca
+            </label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="text"
+                value={customBrand}
+                onChange={(event) => setCustomBrand(event.target.value)}
+                className="flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#34322f] dark:text-blue-50"
+                placeholder="Digite a marca que deseja adicionar"
+              />
+              <button
+                type="button"
+                onClick={handleAddBrand}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition-all hover:bg-primary-dim"
+              >
+                <Plus size={16} />
+                Adicionar
+              </button>
+            </div>
+          </div>
         ) : null}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
             Modelo
           </label>
           <input
@@ -126,7 +213,7 @@ export function ProductForm({
             type="text"
             value={formData.pn}
             onChange={(event) => setFormData({ ...formData, pn: event.target.value })}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm transition-all focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
             placeholder="Ex: CTR-9902-LX"
           />
           {fieldErrors.pn ? (
@@ -135,7 +222,7 @@ export function ProductForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500">
+          <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
             Valor (R$)
           </label>
           <input
@@ -145,7 +232,7 @@ export function ProductForm({
             min="0.01"
             value={formData.price}
             onChange={(event) => setFormData({ ...formData, price: event.target.value })}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm transition-all focus:ring-2 focus:ring-primary/20"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
             placeholder="0.00"
           />
           {fieldErrors.preco ? (
@@ -155,13 +242,13 @@ export function ProductForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
           Categoria
         </label>
         <select
           value={formData.category}
           onChange={(event) => setFormData({ ...formData, category: event.target.value })}
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm transition-all focus:ring-2 focus:ring-primary/20"
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 transition-all focus:ring-2 focus:ring-primary/20 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
         >
           {PRODUCT_CATEGORIES.map((category) => (
             <option key={category}>{category}</option>
@@ -173,25 +260,25 @@ export function ProductForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
           Foto do Modelo (Opcional)
         </label>
         <input
           type="file"
           accept="image/*"
           onChange={handleImageFileChange}
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary"
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 file:mr-4 file:rounded-md file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-primary dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-100"
         />
 
         {imageName ? (
-          <p className="mt-2 text-xs font-medium text-slate-500">
+          <p className="mt-2 text-xs font-medium text-slate-500 dark:text-blue-200/75">
             Imagem selecionada: {imageName}
           </p>
         ) : null}
 
         {formData.image ? (
-          <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2">
-            <div className="relative h-36 w-full overflow-hidden rounded-lg bg-white">
+          <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-[#4a4540] dark:bg-[#2f2c29]">
+            <div className="relative h-36 w-full overflow-hidden rounded-lg bg-white dark:bg-[#34322f]">
               <Image
                 src={formData.image}
                 alt="Pre-visualizacao do modelo"
@@ -209,7 +296,7 @@ export function ProductForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex-1 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:text-blue-100 dark:hover:bg-[#2f2c29]"
         >
           Cancelar
         </button>

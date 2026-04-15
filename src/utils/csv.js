@@ -1,7 +1,7 @@
 import { normalizeUnitStatus, UNIT_STATUS_AVAILABLE } from '@/utils/produtoConstants';
 
 export const CSV_FIELDS = [
-  { key: 'nome', label: 'Nome do Produto', aliases: ['nome', 'nome_do_produto', 'produto'] },
+  { key: 'nome', label: 'Marca', aliases: ['marca', 'nome', 'nome_do_produto', 'produto'] },
   { key: 'pn', label: 'PN', aliases: ['pn', 'part_number', 'modelo'] },
   { key: 'categoria', label: 'Categoria', aliases: ['categoria'] },
   { key: 'preco', label: 'Valor Unitario (R$)', aliases: ['preco', 'valor', 'valor_unitario'] },

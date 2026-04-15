@@ -1,5 +1,14 @@
 export const PRODUCT_CATEGORIES = ['Placa Principal', 'Placa Fonte', 'Outros'];
 
+export const PRODUCT_BRAND_OPTIONS = [
+  'Samsung',
+  'LG',
+  'Philco',
+  'Philips',
+  'Sony',
+  'Semp Toshiba',
+];
+
 export const PRODUCT_STATUS_ACTIVE = 'Ativo';
 
 export const UNIT_STATUS_AVAILABLE = 'Disponivel para venda';

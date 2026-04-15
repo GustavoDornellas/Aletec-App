@@ -17,7 +17,7 @@ function getNumberValue(value) {
 export function validateProduto(produto) {
   const errors = {};
 
-  const nome = getTrimmedValue(produto.nome ?? produto.name);
+  const marca = getTrimmedValue(produto.marca ?? produto.nome ?? produto.name);
   const pn = getTrimmedValue(produto.pn);
   const categoria = getTrimmedValue(produto.categoria ?? produto.category);
   const preco = getNumberValue(produto.preco ?? produto.price);
@@ -27,8 +27,8 @@ export function validateProduto(produto) {
       ? 0
       : getNumberValue(estoqueValue);
 
-  if (!nome) {
-    errors.nome = 'Informe o nome do produto.';
+  if (!marca) {
+    errors.nome = 'Selecione ou informe a marca do item.';
   }
 
   if (!pn) {

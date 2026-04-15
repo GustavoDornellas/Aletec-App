@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import { ProductForm } from '@/components/ProductForm';
 
 export function ProductModal({
+  existingBrands = [],
   isOpen,
   product,
   onClose,
@@ -47,24 +48,25 @@ export function ProductModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+            className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:border dark:border-[#45413c] dark:bg-[#34322f]"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4">
-              <h3 className="text-lg font-bold text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-6 py-4 dark:border-[#45413c] dark:bg-[#2b2927]">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-blue-50">
                 {product ? 'Editar Item' : 'Cadastrar Novo Item'}
               </h3>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full p-1 transition-colors hover:bg-slate-200"
+                className="rounded-full p-1 text-slate-500 transition-colors hover:bg-slate-200 dark:text-blue-100 dark:hover:bg-[#34322f]"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="bg-white p-6 dark:bg-[#34322f]">
               <ProductForm
                 key={product?.id || 'new-product'}
+                existingBrands={existingBrands}
                 product={product}
                 isSubmitting={isSubmitting}
                 fieldErrors={fieldErrors}

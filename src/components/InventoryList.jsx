@@ -1,8 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ChevronDown, Edit, Package, Plus, Trash2 } from 'lucide-react';
+import { Check, ChevronDown, Edit, Package, Plus, Trash2 } from 'lucide-react';
 import {
   normalizeUnitStatus,
   UNIT_STATUS_AVAILABLE,
@@ -26,7 +27,6 @@ export function InventoryList({
   expandedId,
   deletingProductId,
   deletingUnitId,
-  updatingUnitId,
   filteredProducts,
   getVisibleUnits,
   onAddUnit,
@@ -35,8 +35,13 @@ export function InventoryList({
   onEditProduct,
   onPreviewImage,
   onToggleExpanded,
+  onUpdateUnitQuantity,
   onUpdateUnitStatus,
+  savingUnitQuantityId,
+  updatingUnitId,
 }) {
+  const [quantityDrafts, setQuantityDrafts] = useState({});
+
   return (
     <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm dark:border-[#45413c] dark:bg-[#34322f]">
       <div className="hidden grid-cols-12 gap-4 border-b border-slate-100 bg-slate-50 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant dark:border-[#45413c] dark:bg-[#2b2927] dark:text-blue-300/90 md:grid">
@@ -269,7 +274,7 @@ export function InventoryList({
                         <span>Codigo da placa</span>
                         <span className="hidden sm:inline">Estado Atual</span>
                         <div className="flex items-center gap-4">
-                          <span className="hidden sm:inline">Controle de status</span>
+                          <span className="hidden sm:inline">Quantidade e status</span>
                           <button
                             type="button"
                             onClick={() => onAddUnit(product)}
@@ -281,65 +286,109 @@ export function InventoryList({
                         </div>
                       </div>
 
-                      {visibleUnits.map((unit) => (
-                        <div
-                          key={unit.id}
-                          className="flex flex-col items-start justify-between gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-[#45413c] dark:bg-[#34322f] sm:flex-row sm:items-center"
-                        >
-                          <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
-                            {unit.image ? (
-                              <div
-                                className="relative h-10 w-10 shrink-0 cursor-zoom-in overflow-hidden rounded-md border border-slate-200 dark:border-zinc-700"
-                                onClick={() => onPreviewImage({ src: unit.image, alt: `Serial ${unit.sn}` })}
-                              >
-                                <Image
-                                  src={unit.image}
-                                  alt={`Unit ${unit.sn}`}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized
-                                  referrerPolicy="no-referrer"
-                                />
+                      {visibleUnits.map((unit) => {
+                        const quantityDraft = quantityDrafts[unit.id] ?? String(unit.quantity || 1);
+                        const parsedQuantityDraft = Number.parseInt(quantityDraft, 10);
+                        const hasInvalidQuantityDraft =
+                          !Number.isFinite(parsedQuantityDraft) || parsedQuantityDraft < 1;
+                        const hasUnchangedQuantity = String(unit.quantity || 1) === quantityDraft.trim();
+
+                        return (
+                          <div
+                            key={unit.id}
+                            className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 shadow-sm dark:border-[#45413c] dark:bg-[#34322f]"
+                          >
+                            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+                              <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
+                                {unit.image ? (
+                                  <div
+                                    className="relative h-10 w-10 shrink-0 cursor-zoom-in overflow-hidden rounded-md border border-slate-200 dark:border-zinc-700"
+                                    onClick={() => onPreviewImage({ src: unit.image, alt: `Serial ${unit.sn}` })}
+                                  >
+                                    <Image
+                                      src={unit.image}
+                                      alt={`Unit ${unit.sn}`}
+                                      fill
+                                      className="object-cover"
+                                      unoptimized
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </div>
+                                ) : null}
+
+                                <span className="text-xs font-bold text-on-surface dark:text-blue-200">
+                                  {unit.sn}
+                                </span>
+
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${getStatusBadgeClass(
+                                    unit.status
+                                  )}`}
+                                >
+                                  {normalizeUnitStatus(unit.status)}
+                                  {unit.quantity > 1 ? ` (x${unit.quantity})` : ''}
+                                </span>
                               </div>
-                            ) : null}
 
-                            <span className="text-xs font-bold text-on-surface dark:text-blue-200">
-                              {unit.sn}
-                            </span>
+                              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                                <div className="flex items-center gap-2">
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-blue-200/80">
+                                    Quantidade
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={quantityDraft}
+                                    onChange={(event) =>
+                                      setQuantityDrafts((current) => ({
+                                        ...current,
+                                        [unit.id]: event.target.value,
+                                      }))
+                                    }
+                                    disabled={savingUnitQuantityId === unit.id}
+                                    className="w-20 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-bold text-slate-900 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:border-[#4a4540] dark:bg-[#2f2c29] dark:text-blue-50"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => onUpdateUnitQuantity(unit.id, quantityDraft)}
+                                    disabled={
+                                      savingUnitQuantityId === unit.id ||
+                                      hasInvalidQuantityDraft ||
+                                      hasUnchangedQuantity
+                                    }
+                                    className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[10px] font-bold text-on-primary transition-all hover:bg-primary-dim disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    <Check size={12} />
+                                    Salvar
+                                  </button>
+                                </div>
 
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${getStatusBadgeClass(
-                                unit.status
-                              )}`}
-                            >
-                              {normalizeUnitStatus(unit.status)}
-                              {unit.quantity > 1 ? ` (x${unit.quantity})` : ''}
-                            </span>
+                                <div className="flex w-full justify-end gap-2 sm:w-auto">
+                                  <select
+                                    value={normalizeUnitStatus(unit.status)}
+                                    onChange={(event) => onUpdateUnitStatus(unit.id, event.target.value)}
+                                    disabled={updatingUnitId === unit.id}
+                                    className="flex-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-800 focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#2f2c29] dark:text-blue-100 sm:flex-none"
+                                  >
+                                    <option>{UNIT_STATUS_AVAILABLE}</option>
+                                    <option>{UNIT_STATUS_SOLD}</option>
+                                    <option>{UNIT_STATUS_USED}</option>
+                                  </select>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => onDeleteUnit(unit)}
+                                    disabled={deletingUnitId === unit.id}
+                                    className="p-1.5 text-slate-400 transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:text-zinc-400"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-
-                          <div className="flex w-full justify-end gap-2 sm:w-auto">
-                            <select
-                              value={normalizeUnitStatus(unit.status)}
-                              onChange={(event) => onUpdateUnitStatus(unit.id, event.target.value)}
-                              disabled={updatingUnitId === unit.id}
-                              className="flex-1 rounded-md bg-slate-100 px-2 py-1 text-[10px] font-bold focus:ring-1 focus:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#2f2c29] dark:text-blue-100 sm:flex-none"
-                            >
-                              <option>{UNIT_STATUS_AVAILABLE}</option>
-                              <option>{UNIT_STATUS_SOLD}</option>
-                              <option>{UNIT_STATUS_USED}</option>
-                            </select>
-
-                            <button
-                              type="button"
-                              onClick={() => onDeleteUnit(unit)}
-                              disabled={deletingUnitId === unit.id}
-                              className="p-1.5 text-slate-400 transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-60 dark:text-zinc-400"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
 
                       {visibleUnits.length === 0 ? (
                         <p className="py-4 text-center text-xs text-slate-400 dark:text-blue-300/65">
