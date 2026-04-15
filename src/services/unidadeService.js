@@ -1,7 +1,7 @@
 'use client';
 
 import { getSupabaseClient, mapSupabaseError } from '@/services/supabaseClient';
-import { normalizeUnitStatus } from '@/utils/produtoConstants';
+import { normalizeUnitStatus, toDatabaseUnitStatus } from '@/utils/produtoConstants';
 import { createErrorResponse, createSuccessResponse } from '@/utils/serviceResponse';
 import { validateUnidade } from '@/utils/validateUnidade';
 
@@ -22,7 +22,7 @@ function buildUnidadePayload(unidade) {
   return {
     product_id: unidade.productId,
     sn: String(unidade.sn ?? '').trim(),
-    status: normalizeUnitStatus(unidade.status),
+    status: toDatabaseUnitStatus(unidade.status),
     quantity: Number(unidade.quantity ?? 1),
     image: unidade.image || null,
   };
@@ -91,7 +91,7 @@ export async function updateUnidadeStatus(unitId, status) {
     const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('units')
-      .update({ status: normalizeUnitStatus(status) })
+      .update({ status: toDatabaseUnitStatus(status) })
       .eq('id', unitId)
       .select('*')
       .single();
