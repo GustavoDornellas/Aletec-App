@@ -3,6 +3,7 @@ import {
   normalizeUnitStatus,
   PRODUCT_CATEGORIES,
   UNIT_STATUS_ALL,
+  UNIT_STATUS_IN_STOCK,
   UNIT_STATUS_AVAILABLE,
   UNIT_STATUS_SOLD,
 } from '@/utils/produtoConstants';
@@ -47,6 +48,10 @@ function getProductMetrics(productUnits) {
 
       totals.total += quantity;
 
+      if (normalizeUnitStatus(unit.status) === UNIT_STATUS_IN_STOCK) {
+        totals.inStock += quantity;
+      }
+
       if (normalizeUnitStatus(unit.status) === UNIT_STATUS_AVAILABLE) {
         totals.available += quantity;
       }
@@ -61,7 +66,7 @@ function getProductMetrics(productUnits) {
 
       return totals;
     },
-    { total: 0, available: 0, sold: 0, boxes: new Set() }
+    { total: 0, inStock: 0, available: 0, sold: 0, boxes: new Set() }
   );
 }
 
@@ -76,6 +81,7 @@ export function enrichProducts(products, unitsByProduct) {
     return {
       ...product,
       total: metrics.total,
+      inStock: metrics.inStock,
       available: metrics.available,
       sold: metrics.sold,
       boxes,
@@ -86,12 +92,17 @@ export function enrichProducts(products, unitsByProduct) {
 
 export function createInventorySummary(products) {
   const totalUnits = products.reduce((total, product) => total + (product.total || 0), 0);
+  const inStockUnits = products.reduce((total, product) => total + (product.inStock || 0), 0);
   const availableUnits = products.reduce(
     (total, product) => total + (product.available || 0),
     0
   );
   const soldUnits = products.reduce((total, product) => total + (product.sold || 0), 0);
   const inventoryValue = products.reduce(
+    (total, product) => total + (product.inStock || 0) * (product.price || 0),
+    0
+  );
+  const announcedValue = products.reduce(
     (total, product) => total + (product.available || 0) * (product.price || 0),
     0
   );
@@ -103,9 +114,11 @@ export function createInventorySummary(products) {
   return {
     totalProducts: products.length,
     totalUnits,
+    inStockUnits,
     availableUnits,
     soldUnits,
     inventoryValue,
+    announcedValue,
     totalRevenue,
     categories: PRODUCT_CATEGORIES.map((category) => ({
       label: category,

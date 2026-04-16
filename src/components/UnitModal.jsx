@@ -7,7 +7,7 @@ import { Loader2, X } from 'lucide-react';
 import { resizeImage } from '@/utils/image';
 import {
   getUnitStatusLabel,
-  UNIT_STATUS_AVAILABLE,
+  UNIT_STATUS_IN_STOCK,
   UNIT_STATUS_OPTIONS,
 } from '@/utils/produtoConstants';
 
@@ -16,7 +16,7 @@ function createInitialFormData(unit) {
     id: unit?.id || '',
     sn: unit?.sn || '',
     box: unit?.box || '',
-    status: unit?.status || UNIT_STATUS_AVAILABLE,
+    status: unit?.status || UNIT_STATUS_IN_STOCK,
     quantity: unit?.quantity || 1,
     image: unit?.image || '',
   };

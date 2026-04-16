@@ -6,11 +6,16 @@ import { ChevronDown, Edit, Package, Plus, Trash2 } from 'lucide-react';
 import {
   getUnitStatusLabel,
   normalizeUnitStatus,
+  UNIT_STATUS_IN_STOCK,
   UNIT_STATUS_AVAILABLE,
   UNIT_STATUS_USED,
 } from '@/utils/produtoConstants';
 
 function getStatusBadgeClass(status) {
+  if (normalizeUnitStatus(status) === UNIT_STATUS_IN_STOCK) {
+    return 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100';
+  }
+
   if (normalizeUnitStatus(status) === UNIT_STATUS_AVAILABLE) {
     return 'bg-tertiary-container text-on-tertiary-container';
   }
@@ -114,12 +119,15 @@ export function InventoryList({
                       <p className="mt-1 text-sm font-bold text-on-surface dark:text-blue-200">
                         {product.total || 0} Total
                       </p>
+                      <p className="text-[10px] font-bold uppercase tracking-tighter text-slate-500 dark:text-blue-300/75">
+                        {product.inStock || 0} Em estoque
+                      </p>
                       <p
                         className={`text-[10px] font-bold uppercase tracking-tighter ${
                           (product.available || 0) === 0 ? 'text-error' : 'text-tertiary'
                         }`}
                       >
-                        {product.available || 0} Disponiveis
+                        {product.available || 0} Anunciadas
                       </p>
                       <p className="mt-1 text-[10px] font-medium text-slate-500 dark:text-blue-300/75">
                         Caixa: {product.boxSummary || 'Sem caixa informada'}
@@ -218,12 +226,15 @@ export function InventoryList({
                 <div className="col-span-2 text-center">
                   <div className="flex flex-col items-center">
                     <span className="text-sm font-bold dark:text-blue-200">{product.total || 0} Total</span>
+                    <span className="text-[9px] font-bold uppercase tracking-tighter text-slate-500 dark:text-blue-300/75">
+                      {product.inStock || 0} Em estoque
+                    </span>
                     <span
                       className={`text-[9px] font-bold uppercase tracking-tighter ${
                         (product.available || 0) === 0 ? 'text-error' : 'text-tertiary'
                       }`}
                     >
-                      {product.available || 0} Disponiveis
+                      {product.available || 0} Anunciadas
                     </span>
                     <span className="mt-1 text-[10px] font-medium text-slate-500 dark:text-blue-300/75">
                       Caixa: {product.boxSummary || 'Sem caixa informada'}

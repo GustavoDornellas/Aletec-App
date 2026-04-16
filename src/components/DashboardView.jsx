@@ -15,7 +15,7 @@ export function DashboardView({ products, summary }) {
     },
     {
       label: 'Em Estoque',
-      value: summary.availableUnits.toLocaleString('pt-BR'),
+      value: summary.inStockUnits.toLocaleString('pt-BR'),
       sub: `${summary.totalUnits.toLocaleString('pt-BR')} unidades cadastradas`,
       icon: Package,
     },
@@ -30,7 +30,7 @@ export function DashboardView({ products, summary }) {
       value: `R$ ${summary.inventoryValue.toLocaleString('pt-BR', {
         minimumFractionDigits: 2,
       })}`,
-      sub: 'Baseado nas unidades disponiveis',
+      sub: 'Baseado nas unidades em estoque',
       icon: Boxes,
     },
   ];
@@ -65,7 +65,7 @@ export function DashboardView({ products, summary }) {
           </p>
           <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-blue-50">
             {summary.totalProducts} modelos cadastrados e{' '}
-            {summary.availableUnits.toLocaleString('pt-BR')} unidades disponiveis
+            {summary.inStockUnits.toLocaleString('pt-BR')} unidades em estoque
           </p>
         </div>
       </div>
@@ -144,17 +144,17 @@ export function DashboardView({ products, summary }) {
                     Status operacional
                   </p>
                   <p className="text-lg font-extrabold text-slate-900 dark:text-blue-50">
-                    {summary.availableUnits > 0 ? 'Estoque ativo' : 'Sem disponibilidade'}
+                    {summary.inStockUnits > 0 ? 'Estoque ativo' : 'Sem estoque fisico'}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-[#4b4741] dark:bg-[#2b2927]">
                     <p className="text-[10px] font-black uppercase tracking-[0.16em] text-on-surface-variant dark:text-blue-200/85">
-                      Disponiveis
+                      Em estoque
                     </p>
                     <p className="mt-1 text-xl font-extrabold text-slate-900 dark:text-blue-50">
-                      {summary.availableUnits}
+                      {summary.inStockUnits}
                     </p>
                   </div>
 
@@ -195,10 +195,10 @@ export function DashboardView({ products, summary }) {
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="text-sm font-bold text-slate-900 dark:text-blue-50">
-                      {product.available || 0} disp.
+                      {product.inStock || 0} estoque
                     </p>
                     <p className="text-[11px] text-slate-500 dark:text-blue-200/80">
-                      {product.sold || 0} vend.
+                      {product.available || 0} anunc.
                     </p>
                   </div>
                 </div>

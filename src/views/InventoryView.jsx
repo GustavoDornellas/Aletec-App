@@ -201,7 +201,7 @@ export function InventoryView({
         feedback={feedback || (inventoryError ? { type: 'error', message: inventoryError } : null)}
       />
 
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-3 2xl:grid-cols-6">
         {[
           {
             label: 'Total de unidades',
@@ -210,24 +210,38 @@ export function InventoryView({
             icon: Boxes,
           },
           {
-            label: 'Disponiveis',
-            value: inventorySummary.availableUnits.toLocaleString('pt-BR'),
-            sub: 'Prontas para venda',
+            label: 'Em estoque',
+            value: inventorySummary.inStockUnits.toLocaleString('pt-BR'),
+            sub: 'Aguardando anuncio',
             icon: Package,
+          },
+          {
+            label: 'Disponiveis para venda',
+            value: inventorySummary.availableUnits.toLocaleString('pt-BR'),
+            sub: 'Placas anunciadas',
+            icon: ShoppingCart,
           },
           {
             label: 'Vendidas',
             value: inventorySummary.soldUnits.toLocaleString('pt-BR'),
             sub: 'Saida registrada',
-            icon: ShoppingCart,
+            icon: Banknote,
           },
           {
             label: 'Valor em estoque',
             value: `R$ ${inventorySummary.inventoryValue.toLocaleString('pt-BR', {
               minimumFractionDigits: 2,
             })}`,
-            sub: 'Baseado nas unidades disponiveis',
+            sub: 'Apenas placas em estoque',
             icon: Banknote,
+          },
+          {
+            label: 'Valor das placas anunciadas',
+            value: `R$ ${inventorySummary.announcedValue.toLocaleString('pt-BR', {
+              minimumFractionDigits: 2,
+            })}`,
+            sub: 'Somente disponiveis para venda',
+            icon: Package,
           },
         ].map((card) => (
           <div

@@ -1,7 +1,7 @@
 import {
   getUnitStatusLabel,
   normalizeUnitStatus,
-  UNIT_STATUS_AVAILABLE,
+  UNIT_STATUS_IN_STOCK,
 } from '@/utils/produtoConstants';
 
 export const CSV_FIELDS = [
@@ -210,7 +210,7 @@ export function mapCsvRowToPayload(entry) {
     unidade: {
       sn: normalizeCsvValue(entry.serial),
       box: normalizeCsvValue(entry.caixa),
-      status: normalizeUnitStatus(normalizeCsvValue(entry.status_unidade) || UNIT_STATUS_AVAILABLE),
+      status: normalizeUnitStatus(normalizeCsvValue(entry.status_unidade) || UNIT_STATUS_IN_STOCK),
       quantity: Number.parseInt(normalizeCsvValue(entry.quantidade), 10) || 1,
       image: null,
     },
