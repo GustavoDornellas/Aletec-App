@@ -250,23 +250,16 @@ export function useProdutos() {
     return response;
   }
 
-  async function importRows(rows, currentProducts, currentUnitsByProduct) {
+  async function importRows(rows, currentProducts) {
     const productsByKey = new Map(
       currentProducts.map((product) => [
         `${product.pn.trim().toLowerCase()}::${product.category.trim().toLowerCase()}`,
         product,
       ])
     );
-    const existingUnits = new Set(
-      Object.entries(currentUnitsByProduct).flatMap(([productId, productUnits]) =>
-        productUnits.map((unit) => `${productId}:${unit.sn.trim().toLowerCase()}`)
-      )
-    );
-    const importedUnitsFromFile = new Set();
 
     let importedProducts = 0;
     let importedUnits = 0;
-    let skippedUnits = 0;
 
     for (const row of rows) {
       const payload = mapCsvRowToPayload(row.entry);
@@ -307,13 +300,6 @@ export function useProdutos() {
         continue;
       }
 
-      const unitKey = `${product.id}:${payload.unidade.sn.toLowerCase()}`;
-
-      if (existingUnits.has(unitKey) || importedUnitsFromFile.has(unitKey)) {
-        skippedUnits += 1;
-        continue;
-      }
-
       const createUnitResponse = await createUnidade({
         ...payload.unidade,
         productId: product.id,
@@ -328,9 +314,7 @@ export function useProdutos() {
         };
       }
 
-      existingUnits.add(unitKey);
-      importedUnitsFromFile.add(unitKey);
-      importedUnits += 1;
+      importedUnits += createUnitResponse.data?.length || 1;
     }
 
     await loadInventory({ keepScreen: true });
@@ -340,7 +324,7 @@ export function useProdutos() {
       data: {
         importedProducts,
         importedUnits,
-        skippedUnits,
+        skippedUnits: 0,
       },
     };
   }

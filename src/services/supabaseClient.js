@@ -75,7 +75,7 @@ export function mapSupabaseError(error, fallbackMessage) {
     (normalizedMessage.includes('duplicate key value') && normalizedMessage.includes('units'))
   ) {
     return createErrorResponse(
-      'Ja existe uma unidade com esse codigo da placa para este produto.',
+      'O banco ainda esta bloqueando codigos repetidos para o mesmo produto. Aplique a migration que remove a restricao unica das unidades.',
       { code: 'duplicate_unit' }
     );
   }

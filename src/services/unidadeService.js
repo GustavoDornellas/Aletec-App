@@ -34,6 +34,13 @@ function buildUnidadePayload(unidade) {
   };
 }
 
+function buildUnitCopies(payload, totalCopies) {
+  return Array.from({ length: totalCopies }, () => ({
+    ...payload,
+    quantity: 1,
+  }));
+}
+
 function validateUnitQuantity(quantity) {
   const normalizedQuantity = Number.parseInt(String(quantity ?? ''), 10);
 
@@ -79,7 +86,8 @@ function isUnitStatusConstraintError(error) {
 }
 
 async function insertUnidadeWithStatusFallback(supabase, payload) {
-  const { data, error } = await supabase.from('units').insert(payload).select('*').single();
+  const rows = buildUnitCopies(payload, Number.parseInt(String(payload.quantity ?? 1), 10) || 1);
+  const { data, error } = await supabase.from('units').insert(rows).select('*');
 
   if (!error) {
     return { data, error: null };
@@ -94,9 +102,8 @@ async function insertUnidadeWithStatusFallback(supabase, payload) {
   for (const statusCandidate of getLegacyDatabaseUnitStatus(payload.status)) {
     const response = await supabase
       .from('units')
-      .insert({ ...payload, status: statusCandidate })
-      .select('*')
-      .single();
+      .insert(rows.map((row) => ({ ...row, status: statusCandidate })))
+      .select('*');
 
     if (!response.error) {
       return response;
@@ -106,6 +113,17 @@ async function insertUnidadeWithStatusFallback(supabase, payload) {
   }
 
   return { data: null, error: lastError };
+}
+
+async function createExtraUnitCopies(supabase, payload, copiesToCreate) {
+  if (copiesToCreate <= 0) {
+    return { data: [], error: null };
+  }
+
+  return insertUnidadeWithStatusFallback(supabase, {
+    ...payload,
+    quantity: copiesToCreate,
+  });
 }
 
 async function updateUnidadeStatusWithFallback(supabase, unitId, status) {
@@ -182,7 +200,15 @@ export async function createUnidade(unidade) {
       return mapSupabaseError(error, 'Nao foi possivel cadastrar a unidade.');
     }
 
-    return createSuccessResponse(mapUnidade(data), 'Unidade cadastrada com sucesso.');
+    const createdUnits = (data || []).map(mapUnidade);
+    const createdCount = createdUnits.length;
+
+    return createSuccessResponse(
+      createdUnits,
+      createdCount > 1
+        ? `${createdCount} unidades cadastradas com sucesso.`
+        : 'Unidade cadastrada com sucesso.'
+    );
   } catch (error) {
     return mapSupabaseError(error, 'Nao foi possivel cadastrar a unidade.');
   }
@@ -201,9 +227,10 @@ export async function updateUnidade(unitId, unidade) {
   try {
     const supabase = getSupabaseClient();
     const payload = buildUnidadePayload(unidade);
+    const requestedQuantity = Number.parseInt(String(payload.quantity ?? 1), 10) || 1;
     const { data, error } = await supabase
       .from('units')
-      .update(payload)
+      .update({ ...payload, quantity: 1 })
       .eq('id', unitId)
       .select('*')
       .single();
@@ -212,7 +239,22 @@ export async function updateUnidade(unitId, unidade) {
       return mapSupabaseError(error, 'Nao foi possivel atualizar a unidade.');
     }
 
-    return createSuccessResponse(mapUnidade(data), 'Unidade atualizada com sucesso.');
+    const extraCopiesResponse = await createExtraUnitCopies(
+      supabase,
+      { ...payload, quantity: 1 },
+      requestedQuantity - 1
+    );
+
+    if (extraCopiesResponse.error) {
+      return mapSupabaseError(extraCopiesResponse.error, 'Nao foi possivel atualizar a unidade.');
+    }
+
+    return createSuccessResponse(
+      mapUnidade(data),
+      requestedQuantity > 1
+        ? `Unidade atualizada e ${requestedQuantity - 1} copia(s) adicionada(s) com sucesso.`
+        : 'Unidade atualizada com sucesso.'
+    );
   } catch (error) {
     return mapSupabaseError(error, 'Nao foi possivel atualizar a unidade.');
   }
@@ -242,9 +284,20 @@ export async function updateUnidadeQuantity(unitId, quantity) {
 
   try {
     const supabase = getSupabaseClient();
+    const normalizedQuantity = Number.parseInt(String(quantity), 10);
+    const { data: currentUnit, error: currentUnitError } = await supabase
+      .from('units')
+      .select('*')
+      .eq('id', unitId)
+      .single();
+
+    if (currentUnitError) {
+      return mapSupabaseError(currentUnitError, 'Nao foi possivel atualizar a quantidade da unidade.');
+    }
+
     const { data, error } = await supabase
       .from('units')
-      .update({ quantity: Number.parseInt(String(quantity), 10) })
+      .update({ quantity: 1 })
       .eq('id', unitId)
       .select('*')
       .single();
@@ -253,7 +306,32 @@ export async function updateUnidadeQuantity(unitId, quantity) {
       return mapSupabaseError(error, 'Nao foi possivel atualizar a quantidade da unidade.');
     }
 
-    return createSuccessResponse(mapUnidade(data), 'Quantidade atualizada com sucesso.');
+    const extraCopiesResponse = await createExtraUnitCopies(
+      supabase,
+      {
+        productId: currentUnit.product_id,
+        sn: currentUnit.sn,
+        box: currentUnit.storage_box || '',
+        status: currentUnit.status,
+        quantity: 1,
+        image: currentUnit.image,
+      },
+      normalizedQuantity - 1
+    );
+
+    if (extraCopiesResponse.error) {
+      return mapSupabaseError(
+        extraCopiesResponse.error,
+        'Nao foi possivel atualizar a quantidade da unidade.'
+      );
+    }
+
+    return createSuccessResponse(
+      mapUnidade(data),
+      normalizedQuantity > 1
+        ? `Quantidade atualizada e ${normalizedQuantity - 1} copia(s) adicionada(s) com sucesso.`
+        : 'Quantidade atualizada com sucesso.'
+    );
   } catch (error) {
     return mapSupabaseError(error, 'Nao foi possivel atualizar a quantidade da unidade.');
   }
