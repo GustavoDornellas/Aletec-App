@@ -23,11 +23,11 @@ export function InventoryView({
   unitsByProduct = {},
   inventoryError = '',
   refreshing = false,
-  onImportRows = async () => ({ success: false, error: { message: 'Importacao indisponivel.' } }),
-  onRemoveProduct = async () => ({ success: false, error: { message: 'Remocao indisponivel.' } }),
-  onRenameBrand = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
-  onReplaceBrand = async () => ({ success: false, error: { message: 'Atualizacao indisponivel.' } }),
-  onRemoveUnit = async () => ({ success: false, error: { message: 'Remocao indisponivel.' } }),
+  onImportRows = async () => ({ success: false, error: { message: 'Importa\u00e7\u00e3o indispon\u00edvel.' } }),
+  onRemoveProduct = async () => ({ success: false, error: { message: 'Remo\u00e7\u00e3o indispon\u00edvel.' } }),
+  onRenameBrand = async () => ({ success: false, error: { message: 'Atualiza\u00e7\u00e3o indispon\u00edvel.' } }),
+  onReplaceBrand = async () => ({ success: false, error: { message: 'Atualiza\u00e7\u00e3o indispon\u00edvel.' } }),
+  onRemoveUnit = async () => ({ success: false, error: { message: 'Remo\u00e7\u00e3o indispon\u00edvel.' } }),
   onSaveProduct = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
   onSaveUnit = async () => ({ success: false, error: { message: 'Salvamento indisponivel.' } }),
 }) {
@@ -142,7 +142,7 @@ export function InventoryView({
       showFeedback({
         type: 'error',
         message:
-          error instanceof Error ? error.message : 'Nao foi possivel importar o CSV.',
+          error instanceof Error ? error.message : 'N\u00e3o foi poss\u00edvel importar o CSV.',
       });
     }
 
@@ -212,11 +212,11 @@ export function InventoryView({
           {
             label: 'Em estoque',
             value: inventorySummary.inStockUnits.toLocaleString('pt-BR'),
-            sub: 'Aguardando anuncio',
+            sub: 'Aguardando an\u00fancio',
             icon: Package,
           },
           {
-            label: 'Disponiveis para venda',
+            label: 'Dispon\u00edveis para venda',
             value: inventorySummary.availableUnits.toLocaleString('pt-BR'),
             sub: 'Placas anunciadas',
             icon: ShoppingCart,
@@ -224,7 +224,7 @@ export function InventoryView({
           {
             label: 'Vendidas',
             value: inventorySummary.soldUnits.toLocaleString('pt-BR'),
-            sub: 'Saida registrada',
+            sub: 'Sa\u00edda registrada',
             icon: Banknote,
           },
           {
@@ -240,7 +240,7 @@ export function InventoryView({
             value: `R$ ${inventorySummary.announcedValue.toLocaleString('pt-BR', {
               minimumFractionDigits: 2,
             })}`,
-            sub: 'Somente disponiveis para venda',
+            sub: 'Somente dispon\u00edveis para venda',
             icon: Package,
           },
         ].map((card) => (
@@ -354,7 +354,7 @@ export function InventoryView({
       <ConfirmDialog
         isOpen={Boolean(deleteConfirmId)}
         title="Excluir Produto?"
-        description="Esta acao nao pode ser desfeita. Todas as unidades vinculadas tambem serao removidas."
+        description="Esta a\u00e7\u00e3o n\u00e3o pode ser desfeita. Todas as unidades vinculadas tamb\u00e9m ser\u00e3o removidas."
         confirmLabel="Excluir"
         isLoading={Boolean(deleteConfirmId && deletingProductId === deleteConfirmId)}
         onCancel={() => setDeleteConfirmId(null)}

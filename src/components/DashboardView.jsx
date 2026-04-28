@@ -2,6 +2,8 @@
 
 import { Banknote, BarChart3, Boxes, Package } from 'lucide-react';
 import { motion } from 'motion/react';
+import { SoldBrandsChart } from '@/components/SoldBrandsChart';
+import { createSoldBrandBreakdown } from '@/utils/inventory';
 
 export function DashboardView({ products, summary }) {
   const stats = [
@@ -35,13 +37,7 @@ export function DashboardView({ products, summary }) {
     },
   ];
 
-  const recentProducts = [...products]
-    .sort((firstProduct, secondProduct) => {
-      const firstTime = new Date(firstProduct.updatedAt || firstProduct.createdAt).getTime();
-      const secondTime = new Date(secondProduct.updatedAt || secondProduct.createdAt).getTime();
-      return secondTime - firstTime;
-    })
-    .slice(0, 5);
+  const soldBrandsSummary = createSoldBrandBreakdown(products);
 
   return (
     <motion.div
@@ -55,13 +51,13 @@ export function DashboardView({ products, summary }) {
             Dashboard
           </h2>
           <p className="mt-1 text-sm font-medium uppercase tracking-wider text-on-surface-variant">
-            Visao geral do estoque e da operacao
+            Vis\u00e3o geral do estoque e da opera\u00e7\u00e3o
           </p>
         </div>
 
         <div className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm md:w-auto dark:border-[#45413c] dark:bg-[#2b2927]">
           <p className="text-[11px] font-black uppercase tracking-[0.24em] text-on-surface-variant dark:text-blue-200/85">
-            Resumo rapido
+            Resumo r\u00e1pido
           </p>
           <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-blue-50">
             {summary.totalProducts} modelos cadastrados e{' '}
@@ -101,7 +97,7 @@ export function DashboardView({ products, summary }) {
         <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-[#45413c] dark:bg-[#2b2927] lg:col-span-7">
           <h3 className="mb-6 flex items-center gap-2 font-headline font-bold text-on-surface dark:text-blue-50">
             <BarChart3 className="text-primary" size={20} />
-            Distribuicao por Categoria
+            Distribui\u00e7\u00e3o por Categoria
           </h3>
 
           <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
@@ -144,7 +140,7 @@ export function DashboardView({ products, summary }) {
                     Status operacional
                   </p>
                   <p className="text-lg font-extrabold text-slate-900 dark:text-blue-50">
-                    {summary.inStockUnits > 0 ? 'Estoque ativo' : 'Sem estoque fisico'}
+                    {summary.inStockUnits > 0 ? 'Estoque ativo' : 'Sem estoque f\u00edsico'}
                   </p>
                 </div>
 
@@ -172,44 +168,7 @@ export function DashboardView({ products, summary }) {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-[#45413c] dark:bg-[#2b2927] lg:col-span-5">
-          <h3 className="mb-6 flex items-center gap-2 font-headline font-bold text-on-surface dark:text-blue-50">
-            <Package className="text-primary" size={20} />
-            Resumo dos Produtos
-          </h3>
-
-          <div className="space-y-3">
-            {recentProducts.length > 0 ? (
-              recentProducts.map((product) => (
-                <div
-                  key={product.id}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3 dark:border-[#45413c] dark:bg-[#242220]"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-bold text-slate-900 dark:text-blue-50">
-                      {product.name}
-                    </p>
-                    <p className="truncate text-[11px] text-slate-500 dark:text-blue-200/80">
-                      PN: {product.pn} | {product.category}
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold text-slate-900 dark:text-blue-50">
-                      {product.inStock || 0} estoque
-                    </p>
-                    <p className="text-[11px] text-slate-500 dark:text-blue-200/80">
-                      {product.available || 0} anunc.
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500 dark:border-[#4b4741] dark:text-blue-300/70">
-                Nenhum produto cadastrado ainda.
-              </div>
-            )}
-          </div>
-        </div>
+        <SoldBrandsChart brandsSummary={soldBrandsSummary} />
       </div>
     </motion.div>
   );

@@ -127,6 +127,69 @@ export function createInventorySummary(products) {
   };
 }
 
+export function createSoldBrandBreakdown(products) {
+  const safeProducts = Array.isArray(products) ? products : [];
+
+  const soldByBrand = safeProducts.reduce((accumulator, product) => {
+    if (!product || typeof product !== 'object') {
+      return accumulator;
+    }
+
+    const soldUnits = Number(product.sold || 0);
+    const brand = String(product.brand || product.name || 'Sem marca').trim() || 'Sem marca';
+
+    if (!Number.isFinite(soldUnits) || soldUnits <= 0) {
+      return accumulator;
+    }
+
+    if (!accumulator[brand]) {
+      accumulator[brand] = 0;
+    }
+
+    accumulator[brand] += soldUnits;
+    return accumulator;
+  }, {});
+
+  const totalSold = Object.values(soldByBrand).reduce((total, value) => total + value, 0);
+
+  const breakdown = Object.entries(soldByBrand)
+    .map(([brand, value]) => ({
+      brand,
+      value,
+      percentage: totalSold > 0 ? (value / totalSold) * 100 : 0,
+    }))
+    .sort((firstBrand, secondBrand) => {
+      if (secondBrand.value !== firstBrand.value) {
+        return secondBrand.value - firstBrand.value;
+      }
+
+      return firstBrand.brand.localeCompare(secondBrand.brand, 'pt-BR');
+    });
+
+  const breakdownWithRoundedPercentage = breakdown.map((brand, index) => {
+    if (index === breakdown.length - 1) {
+      const allocatedPercentage = breakdown
+        .slice(0, index)
+        .reduce((total, item) => total + Math.round(item.percentage), 0);
+
+      return {
+        ...brand,
+        percentage: Math.max(0, 100 - allocatedPercentage),
+      };
+    }
+
+    return {
+      ...brand,
+      percentage: Math.round(brand.percentage),
+    };
+  });
+
+  return {
+    totalSold,
+    breakdown: breakdownWithRoundedPercentage,
+  };
+}
+
 export function filterProducts(products, unitsByProduct, filters) {
   const normalizedSearch = filters.searchTerm.trim().toLowerCase();
 

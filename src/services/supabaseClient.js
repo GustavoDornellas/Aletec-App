@@ -11,7 +11,7 @@ function getSupabaseCredentials() {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return createErrorResponse(
-      'Supabase nao configurado. Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.'
+      'Supabase n\u00e3o configurado. Defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY.'
     );
   }
 
@@ -65,7 +65,7 @@ export function mapSupabaseError(error, fallbackMessage) {
     normalizedMessage.includes('products_pn_category_key')
   ) {
     return createErrorResponse(
-      'Ja existe um produto com esse modelo na mesma categoria.',
+      'J\u00e1 existe um produto com esse modelo na mesma categoria.',
       { code: 'duplicate_product' }
     );
   }
@@ -75,19 +75,19 @@ export function mapSupabaseError(error, fallbackMessage) {
     (normalizedMessage.includes('duplicate key value') && normalizedMessage.includes('units'))
   ) {
     return createErrorResponse(
-      'O banco ainda esta bloqueando codigos repetidos para o mesmo produto. Aplique a migration que remove a restricao unica das unidades.',
+      'O banco ainda est\u00e1 bloqueando c\u00f3digos repetidos para o mesmo produto. Aplique a migration que remove a restri\u00e7\u00e3o \u00fanica das unidades.',
       { code: 'duplicate_unit' }
     );
   }
 
   if (normalizedMessage.includes('row-level security')) {
     return createErrorResponse(
-      'Voce nao tem permissao para realizar essa operacao.',
+      'Voc\u00ea n\u00e3o tem permiss\u00e3o para realizar essa opera\u00e7\u00e3o.',
       { code: 'rls_denied' }
     );
   }
 
-  return createErrorResponse(fallbackMessage || 'Nao foi possivel concluir a operacao.', {
+  return createErrorResponse(fallbackMessage || 'N\u00e3o foi poss\u00edvel concluir a opera\u00e7\u00e3o.', {
     code: 'supabase_error',
     details: rawMessage,
   });

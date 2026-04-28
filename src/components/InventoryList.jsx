@@ -43,14 +43,14 @@ export function InventoryList({
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm dark:border-[#45413c] dark:bg-[#34322f]">
-      <div className="hidden grid-cols-12 gap-4 border-b border-slate-100 bg-slate-50 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant dark:border-[#45413c] dark:bg-[#2b2927] dark:text-blue-300/90 md:grid">
-        <div className="col-span-1" />
-        <div className="col-span-4">Produto</div>
-        <div className="col-span-2">Categoria</div>
-        <div className="col-span-2 text-center">Quantidade</div>
-        <div className="col-span-2 text-right">Preco Un. (R$)</div>
-        <div className="col-span-1 text-center">Acoes</div>
-      </div>
+        <div className="hidden grid-cols-12 gap-4 border-b border-slate-100 bg-slate-50 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-on-surface-variant dark:border-[#45413c] dark:bg-[#2b2927] dark:text-blue-300/90 md:grid">
+          <div className="col-span-1" />
+          <div className="col-span-4">Produto</div>
+          <div className="col-span-2">Categoria</div>
+          <div className="col-span-2 text-center">Quantidade</div>
+          <div className="col-span-2 text-right">Pre\u00e7o Un. (R$)</div>
+          <div className="col-span-1 text-center">A\u00e7\u00f5es</div>
+        </div>
 
       <div className="divide-y divide-slate-100 dark:divide-zinc-800">
         {filteredProducts.map((product) => {
@@ -282,8 +282,8 @@ export function InventoryList({
                   >
                     <div className="space-y-2 px-4 py-4 md:px-6">
                       <div className="flex items-center justify-between px-2 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-blue-300/80 md:px-10">
-                        <span>Codigo da placa</span>
-                        <span className="hidden sm:inline">Estado Atual</span>
+                        <span>C\u00f3digo da placa</span>
+                        <span className="hidden sm:inline">Estado atual</span>
                         <div className="flex items-center gap-4">
                           <span className="hidden sm:inline">Quantidade e status</span>
                           <button
