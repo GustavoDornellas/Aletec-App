@@ -1,4 +1,4 @@
-# Aletec Inventory Control
+# Controle de Inventário Aletec
 
 ## Sobre o projeto
 
