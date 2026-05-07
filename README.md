@@ -148,13 +148,6 @@ Foram aplicadas melhorias leves, mas reais, para o escopo da aplicação:
 - mensagens de erro amigáveis na interface
 - estrutura preparada para funcionar bem com políticas RLS do Supabase
 
-## Melhorias futuras
-
-- adicionar testes para services e validações
-- adicionar um sistema de toast para múltiplas notificações
-- registrar metadados de auditoria se houver necessidade de múltiplos usuários
-- adicionar melhorias incrementais de UX conforme o uso real do sistema
-
 ## Autor
 
 Gustavo Dornellas
