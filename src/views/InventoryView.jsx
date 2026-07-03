@@ -20,6 +20,8 @@ import { UnitModal } from '@/components/UnitModal';
 export function InventoryView({
   brands = [],
   products = [],
+  returns = [],
+  sales = [],
   unitsByProduct = {},
   inventoryError = '',
   refreshing = false,
@@ -70,7 +72,10 @@ export function InventoryView({
     });
   }, [categoryFilter, deferredSearchTerm, products, statusFilter, unitsByProduct]);
 
-  const inventorySummary = useMemo(() => createInventorySummary(products), [products]);
+  const inventorySummary = useMemo(
+    () => createInventorySummary(products, sales, returns),
+    [products, returns, sales]
+  );
 
   function showFeedback(nextFeedback) {
     setFeedback(nextFeedback);
@@ -216,7 +221,7 @@ export function InventoryView({
             icon: Package,
           },
           {
-            label: 'Dispon\u00edveis para venda',
+            label: 'Anunciadas',
             value: inventorySummary.availableUnits.toLocaleString('pt-BR'),
             sub: 'Placas anunciadas',
             icon: ShoppingCart,
@@ -240,7 +245,7 @@ export function InventoryView({
             value: `R$ ${inventorySummary.announcedValue.toLocaleString('pt-BR', {
               minimumFractionDigits: 2,
             })}`,
-            sub: 'Somente dispon\u00edveis para venda',
+            sub: 'Somente placas anunciadas',
             icon: Package,
           },
         ].map((card) => (

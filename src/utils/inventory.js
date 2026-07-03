@@ -4,8 +4,9 @@ import {
   PRODUCT_CATEGORIES,
   UNIT_STATUS_ALL,
   UNIT_STATUS_IN_STOCK,
-  UNIT_STATUS_AVAILABLE,
+  UNIT_STATUS_ANNOUNCED,
   UNIT_STATUS_SOLD,
+  UNIT_STATUS_RETURNED,
 } from '@/utils/produtoConstants';
 
 function normalizeBoxLabel(box) {
@@ -52,12 +53,16 @@ function getProductMetrics(productUnits) {
         totals.inStock += quantity;
       }
 
-      if (normalizeUnitStatus(unit.status) === UNIT_STATUS_AVAILABLE) {
+      if (normalizeUnitStatus(unit.status) === UNIT_STATUS_ANNOUNCED) {
         totals.available += quantity;
       }
 
       if (normalizeUnitStatus(unit.status) === UNIT_STATUS_SOLD) {
         totals.sold += quantity;
+      }
+
+      if (normalizeUnitStatus(unit.status) === UNIT_STATUS_RETURNED) {
+        totals.returned += quantity;
       }
 
       if (normalizedBox) {
@@ -66,7 +71,74 @@ function getProductMetrics(productUnits) {
 
       return totals;
     },
-    { total: 0, inStock: 0, available: 0, sold: 0, boxes: new Set() }
+    { total: 0, inStock: 0, available: 0, sold: 0, returned: 0, boxes: new Set() }
+  );
+}
+
+function getReturnSaleIds(returns) {
+  return new Set(
+    (Array.isArray(returns) ? returns : [])
+      .map((returnRecord) => returnRecord.saleId)
+      .filter(Boolean)
+  );
+}
+
+function getCompletedSales(sales, returns) {
+  const returnedSaleIds = getReturnSaleIds(returns);
+
+  return (Array.isArray(sales) ? sales : []).filter((sale) => {
+    return sale?.id && !returnedSaleIds.has(sale.id);
+  });
+}
+
+function parseDateOnly(date) {
+  if (!date) {
+    return null;
+  }
+
+  const parsedDate = new Date(`${date}T00:00:00`);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
+function isSameMonth(date, referenceDate) {
+  return (
+    date &&
+    date.getFullYear() === referenceDate.getFullYear() &&
+    date.getMonth() === referenceDate.getMonth()
+  );
+}
+
+function createSalesSummary(sales, returns, referenceDate = new Date()) {
+  const completedSales = getCompletedSales(sales, returns);
+  const today = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate()
+  );
+
+  return completedSales.reduce(
+    (totals, sale) => {
+      const soldValue = Number(sale.soldValue || 0);
+      const netValue = Number(sale.netValue || 0);
+      const receiptDate = parseDateOnly(sale.receiptDate);
+
+      totals.soldValue += Number.isFinite(soldValue) ? soldValue : 0;
+
+      if (receiptDate && isSameMonth(receiptDate, today)) {
+        totals.receivedThisMonth += Number.isFinite(netValue) ? netValue : 0;
+      }
+
+      if (!receiptDate || receiptDate > today) {
+        totals.futureEarnings += Number.isFinite(netValue) ? netValue : 0;
+      }
+
+      return totals;
+    },
+    {
+      soldValue: 0,
+      futureEarnings: 0,
+      receivedThisMonth: 0,
+    }
   );
 }
 
@@ -84,13 +156,14 @@ export function enrichProducts(products, unitsByProduct) {
       inStock: metrics.inStock,
       available: metrics.available,
       sold: metrics.sold,
+      returned: metrics.returned,
       boxes,
       boxSummary: buildProductBoxSummary(boxes),
     };
   });
 }
 
-export function createInventorySummary(products) {
+export function createInventorySummary(products, sales = [], returns = []) {
   const totalUnits = products.reduce((total, product) => total + (product.total || 0), 0);
   const inStockUnits = products.reduce((total, product) => total + (product.inStock || 0), 0);
   const availableUnits = products.reduce(
@@ -98,6 +171,7 @@ export function createInventorySummary(products) {
     0
   );
   const soldUnits = products.reduce((total, product) => total + (product.sold || 0), 0);
+  const returnedUnits = products.reduce((total, product) => total + (product.returned || 0), 0);
   const inventoryValue = products.reduce(
     (total, product) => total + (product.inStock || 0) * (product.price || 0),
     0
@@ -106,10 +180,7 @@ export function createInventorySummary(products) {
     (total, product) => total + (product.available || 0) * (product.price || 0),
     0
   );
-  const totalRevenue = products.reduce(
-    (total, product) => total + (product.sold || 0) * (product.price || 0),
-    0
-  );
+  const salesSummary = createSalesSummary(sales, returns);
 
   return {
     totalProducts: products.length,
@@ -117,9 +188,12 @@ export function createInventorySummary(products) {
     inStockUnits,
     availableUnits,
     soldUnits,
+    returnedUnits,
     inventoryValue,
     announcedValue,
-    totalRevenue,
+    soldValue: salesSummary.soldValue,
+    futureEarnings: salesSummary.futureEarnings,
+    receivedThisMonth: salesSummary.receivedThisMonth,
     categories: PRODUCT_CATEGORIES.map((category) => ({
       label: category,
       value: products.filter((product) => product.category === category).length,
@@ -127,7 +201,24 @@ export function createInventorySummary(products) {
   };
 }
 
-export function createSoldBrandBreakdown(products) {
+export function createSoldBrandBreakdown(products, sales = [], returns = []) {
+  const completedSales = getCompletedSales(sales, returns);
+
+  if (completedSales.length > 0) {
+    const soldByBrand = completedSales.reduce((accumulator, sale) => {
+      const brand = String(sale.product?.brand || sale.product?.name || 'Sem marca').trim() || 'Sem marca';
+
+      if (!accumulator[brand]) {
+        accumulator[brand] = 0;
+      }
+
+      accumulator[brand] += 1;
+      return accumulator;
+    }, {});
+
+    return buildSoldBrandBreakdown(soldByBrand);
+  }
+
   const safeProducts = Array.isArray(products) ? products : [];
 
   const soldByBrand = safeProducts.reduce((accumulator, product) => {
@@ -150,6 +241,10 @@ export function createSoldBrandBreakdown(products) {
     return accumulator;
   }, {});
 
+  return buildSoldBrandBreakdown(soldByBrand);
+}
+
+function buildSoldBrandBreakdown(soldByBrand) {
   const totalSold = Object.values(soldByBrand).reduce((total, value) => total + value, 0);
 
   const breakdown = Object.entries(soldByBrand)

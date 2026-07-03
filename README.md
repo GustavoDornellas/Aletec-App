@@ -14,8 +14,9 @@ O sistema foi pensado para ajudar no controle de:
 
 - modelos de produto
 - unidades individuais
-- estoque disponível para venda
+- estoque anunciado
 - itens vendidos ou utilizados
+- vendas e devolucoes preservando historico
 - importação e exportação por CSV
 
 ## Solução adotada
@@ -65,13 +66,22 @@ supabase/
 - `src/utils/`: validações, constantes, CSV e helpers
 - `supabase/migrations/`: histórico de evolução do banco
 
+## Regras de negocio principais
+
+- cada unidade possui um `id` proprio e pode ser alterada individualmente
+- os status de unidade sao normalizados como `in_stock`, `available`, `used`, `sold` e `returned`
+- cada venda pertence a uma unica unidade
+- uma devolucao pertence a uma unica venda e nao apaga o historico da venda
+- vendas devolvidas deixam de compor os totais financeiros de vendas concluidas
+
 ## Funcionalidades
 
 - autenticação com Supabase
 - cadastro, edição e remoção de produtos
 - cadastro e remoção de unidades
 - atualização de status das unidades
-- dashboard com visão geral do estoque
+- dashboard com visão geral do estoque, vendas concluidas e recebimentos
+- leitura de vendas e devolucoes registradas no Supabase
 - importação e exportação CSV
 - validação antes de persistir dados
 - feedback visual de carregamento, sucesso, erro e vazio

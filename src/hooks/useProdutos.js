@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   addBrandToCatalog,
   loadBrandCatalog,
@@ -15,6 +15,7 @@ import {
   replaceProdutoBrand,
   updateProduto,
 } from '@/services/produtoService';
+import { listReturns, listSales } from '@/services/saleService';
 import {
   createUnidade,
   deleteUnidade,
@@ -32,28 +33,62 @@ export function useProdutos() {
   const [products, setProducts] = useState([]);
   const [brands, setBrands] = useState([]);
   const [unitsByProduct, setUnitsByProduct] = useState({});
+  const [sales, setSales] = useState([]);
+  const [returns, setReturns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
-  function buildInventoryData(productsResponse, unitsResponse) {
+  function buildInventoryData(productsResponse, unitsResponse, salesResponse, returnsResponse) {
     const nextUnitsByProduct = buildUnitsByProduct(unitsResponse.data);
     const nextProducts = enrichProducts(productsResponse.data, nextUnitsByProduct);
 
     return {
       products: nextProducts,
       unitsByProduct: nextUnitsByProduct,
+      sales: salesResponse.data,
+      returns: returnsResponse.data,
     };
   }
 
-  function syncBrandCatalog(nextProducts) {
+  const syncBrandCatalog = useCallback((nextProducts) => {
     setBrands(loadBrandCatalog(nextProducts.map((product) => product.brand || product.name)));
-  }
+  }, []);
 
   function finishLoading() {
     setLoading(false);
     setRefreshing(false);
   }
+
+  const fetchInventoryData = useCallback(async () => {
+    const [productsResponse, unitsResponse, salesResponse, returnsResponse] = await Promise.all([
+      listProdutos(),
+      listUnidades(),
+      listSales(),
+      listReturns(),
+    ]);
+
+    const failedResponse = [productsResponse, unitsResponse, salesResponse, returnsResponse].find(
+      (response) => !response.success
+    );
+
+    if (failedResponse) {
+      return failedResponse;
+    }
+
+    return {
+      success: true,
+      data: buildInventoryData(productsResponse, unitsResponse, salesResponse, returnsResponse),
+    };
+  }, []);
+
+  const applyInventoryData = useCallback((inventoryData) => {
+    setProducts(inventoryData.products);
+    syncBrandCatalog(inventoryData.products);
+    setUnitsByProduct(inventoryData.unitsByProduct);
+    setSales(inventoryData.sales);
+    setReturns(inventoryData.returns);
+  }, [syncBrandCatalog]);
 
   async function loadInventory(options = {}) {
     const shouldKeepScreen = options.keepScreen ?? false;
@@ -65,58 +100,39 @@ export function useProdutos() {
       setLoading(true);
     }
 
-    const [productsResponse, unitsResponse] = await Promise.all([listProdutos(), listUnidades()]);
+    const response = await fetchInventoryData();
 
-    if (!productsResponse.success) {
-      setError(productsResponse.error.message);
+    if (!response.success) {
+      setError(response.error.message);
       finishLoading();
-      return productsResponse;
+      return response;
     }
 
-    if (!unitsResponse.success) {
-      setError(unitsResponse.error.message);
-      finishLoading();
-      return unitsResponse;
-    }
-
-    const inventoryData = buildInventoryData(productsResponse, unitsResponse);
-
-    setProducts(inventoryData.products);
-    syncBrandCatalog(inventoryData.products);
-    setUnitsByProduct(inventoryData.unitsByProduct);
+    applyInventoryData(response.data);
     finishLoading();
 
-    return {
-      success: true,
-      data: inventoryData,
-    };
+    return response;
   }
 
   useEffect(() => {
     let isActive = true;
 
     async function initializeInventory() {
-      const [productsResponse, unitsResponse] = await Promise.all([listProdutos(), listUnidades()]);
+      setError('');
+      setLoading(true);
+      const response = await fetchInventoryData();
 
       if (!isActive) {
         return;
       }
 
-      if (!productsResponse.success || !unitsResponse.success) {
-        setError(
-          productsResponse.error?.message ||
-            unitsResponse.error?.message ||
-            'Nao foi possivel carregar o inventario.'
-        );
+      if (!response.success) {
+        setError(response.error.message);
         setLoading(false);
         return;
       }
 
-      const inventoryData = buildInventoryData(productsResponse, unitsResponse);
-
-      setProducts(inventoryData.products);
-      syncBrandCatalog(inventoryData.products);
-      setUnitsByProduct(inventoryData.unitsByProduct);
+      applyInventoryData(response.data);
       setLoading(false);
     }
 
@@ -125,7 +141,7 @@ export function useProdutos() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [applyInventoryData, fetchInventoryData]);
 
   async function saveProduct(product, currentProduct) {
     const normalizedBrand = String(product.brand ?? product.name ?? '').trim();
@@ -329,12 +345,17 @@ export function useProdutos() {
     };
   }
 
-  const summary = useMemo(() => createInventorySummary(products), [products]);
+  const summary = useMemo(
+    () => createInventorySummary(products, sales, returns),
+    [products, returns, sales]
+  );
 
   return {
     products,
     brands,
     unitsByProduct,
+    sales,
+    returns,
     summary,
     error,
     loading,

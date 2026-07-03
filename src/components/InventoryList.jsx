@@ -7,8 +7,9 @@ import {
   getUnitStatusLabel,
   normalizeUnitStatus,
   UNIT_STATUS_IN_STOCK,
-  UNIT_STATUS_AVAILABLE,
+  UNIT_STATUS_ANNOUNCED,
   UNIT_STATUS_USED,
+  UNIT_STATUS_RETURNED,
 } from '@/utils/produtoConstants';
 
 function getStatusBadgeClass(status) {
@@ -16,12 +17,16 @@ function getStatusBadgeClass(status) {
     return 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-100';
   }
 
-  if (normalizeUnitStatus(status) === UNIT_STATUS_AVAILABLE) {
+  if (normalizeUnitStatus(status) === UNIT_STATUS_ANNOUNCED) {
     return 'bg-tertiary-container text-on-tertiary-container';
   }
 
   if (normalizeUnitStatus(status) === UNIT_STATUS_USED) {
-    return 'bg-amber-100 text-amber-700';
+    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200';
+  }
+
+  if (normalizeUnitStatus(status) === UNIT_STATUS_RETURNED) {
+    return 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200';
   }
 
   return 'bg-primary/10 text-primary';

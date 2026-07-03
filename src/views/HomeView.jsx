@@ -13,6 +13,14 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { useProdutos } from '@/hooks/useProdutos';
 import { InventoryView } from '@/views/InventoryView';
 
+function getViewTitle(activeView) {
+  if (activeView === 'dashboard') {
+    return 'Dashboard';
+  }
+
+  return 'Gerenciamento de Estoque';
+}
+
 export function HomePageContent() {
   const { loading: authLoading, user } = useAuth();
   const [activeView, setActiveView] = useState('dashboard');
@@ -48,7 +56,7 @@ export function HomePageContent() {
 
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <TopBar
-          title={activeView === 'dashboard' ? 'Dashboard' : 'Gerenciamento de Estoque'}
+          title={getViewTitle(activeView)}
           onMenuClick={() => setIsSidebarOpen(true)}
         />
 
@@ -64,12 +72,19 @@ export function HomePageContent() {
                     : null
                 }
               />
-              <DashboardView products={inventory.products} summary={inventory.summary} />
+              <DashboardView
+                products={inventory.products}
+                returns={inventory.returns}
+                sales={inventory.sales}
+                summary={inventory.summary}
+              />
             </div>
           ) : (
             <InventoryView
               products={inventory.products}
               brands={inventory.brands}
+              returns={inventory.returns}
+              sales={inventory.sales}
               unitsByProduct={inventory.unitsByProduct}
               inventoryError={inventory.error}
               refreshing={inventory.refreshing}
