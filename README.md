@@ -28,6 +28,16 @@ A aplicação foi construída com Next.js no frontend e Supabase para autentica�
 - validação antes de gravar dados
 - feedback claro para sucesso, erro e carregamento
 
+
+## O que aprendi com o projeto
+
+O Aletec surgiu de uma necessidade real do meu pai, que realizava o controle de placas manualmente em um caderno. Por iniciativa própria, desenvolvi uma solução para tornar a busca e o controle dos produtos mais rápidos e organizados.
+
+Durante o desenvolvimento, aprofundei meus conhecimentos em React e JavaScript e aprendi a trabalhar com o Supabase para autenticação e persistência de dados. Também evoluí na organização de projetos, validação de informações e resolução de problemas.
+
+Utilizei IA como ferramenta de apoio durante o desenvolvimento, principalmente para pesquisar soluções, identificar problemas e revisar implementações. Isso me permitiu aprender na prática e entender melhor cada parte do projeto.
+
+
 ## Stack
 
 - Next.js 15
